@@ -1,6 +1,7 @@
 package com.desktop.services.utils;
 
 import com.desktop.services.config.constants.RegexConstants;
+import com.desktop.services.config.constants.ScrapperWorkerConstants;
 import com.desktop.services.config.enums.SaveAsEnum;
 import org.apache.commons.io.FilenameUtils;
 import org.jsoup.nodes.Document;
@@ -94,7 +95,7 @@ public class ScrapperWorker {
 
     public static SaveAsEnum GetSaveAsFromContentType(String contentType) {
         String lowerCaseContentType = contentType.toLowerCase();
-        for (var el : ContentTypeToSaveAs.entrySet()) {
+        for (var el : ScrapperWorkerConstants.CONTENT_TYPE_TO_SAVE_AS.entrySet()) {
             if (lowerCaseContentType.startsWith(el.getKey())) return el.getValue();
         }
 
@@ -109,13 +110,13 @@ public class ScrapperWorker {
         if (!check.hasAttr(attr)) return;
 
         String attrValue = check.absUrl(attr);
-        if (allowedTypes.contains(FilesWorker.GetFileType(attrValue))) {
+        if (ScrapperWorkerConstants.ALLOWED_TYPES.contains(FilesWorker.GetFileType(attrValue))) {
             elementsTo.add(check);
         }
     }
 
     private static int getInvalidFileNameCharIndex(String fileName) {
-        for (Character el : INVALID_SPECIFIC_CHARS) {
+        for (Character el : ScrapperWorkerConstants.INVALID_SPECIFIC_CHARS) {
             int index = fileName.indexOf(el);
 
             if (index > 0)
@@ -124,15 +125,4 @@ public class ScrapperWorker {
 
         return -1;
     }
-
-    public static final Character[] INVALID_SPECIFIC_CHARS = {'"', '*', '<', '>', '?', '|', '#', ':'};
-    public static final Set<SaveAsEnum> allowedTypes = new HashSet<>(Arrays.asList(SaveAsEnum.AUDIO, SaveAsEnum.VIDEO, SaveAsEnum.FONT, SaveAsEnum.IMAGES));
-    private static final Map<String, SaveAsEnum> ContentTypeToSaveAs = Map.of(
-            "text/css", SaveAsEnum.STYLESHEET,
-            "text/javascript", SaveAsEnum.SCRIPT,
-            "font/", SaveAsEnum.FONT,
-            "video/", SaveAsEnum.VIDEO,
-            "image/", SaveAsEnum.IMAGES,
-            "audio/", SaveAsEnum.AUDIO
-    );
 }

@@ -1,13 +1,15 @@
-package com.desktop.services.processor;
+package com.desktop.services.processors.scrapper;
 
 import com.desktop.services.config.constants.HTMLConstants;
 import com.desktop.services.config.constants.RegexConstants;
 import com.desktop.services.config.enums.SaveAsEnum;
 import com.desktop.services.models.FileSaveModel;
+import com.desktop.services.processors.interfaces.IScrapperProcess;
 import com.desktop.services.utils.FilesWorker;
 import com.desktop.services.utils.PathHelper;
 import com.desktop.services.utils.RegexWorker;
 import com.desktop.services.utils.ScrapperWorker;
+import org.apache.commons.codec.binary.Base64;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -20,14 +22,15 @@ import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
-public class HtmlProcessor {
+public class HtmlProcessor implements IScrapperProcess {
     private final ConcurrentHashMap<String, FileSaveModel> filesToSave;
 
     public HtmlProcessor(ConcurrentHashMap<String, FileSaveModel> filesToSave) {
         this.filesToSave = filesToSave;
     }
 
-    public CompletableFuture<Void> SaveHtmlMediaAsync(Document document) {
+    @Override
+    public CompletableFuture<Void> ProcessAsync(Document document) {
         Elements externalFiles = ScrapperWorker.ScrapAllExternalFiles(document);
         Elements scriptFiles = ScrapperWorker.ScrapScripts(document);
 
@@ -66,7 +69,7 @@ public class HtmlProcessor {
             if (!element.hasAttr(attr)) continue;
 
             String attrValue = element.attr(attr);
-            String updatedValue = RegexWorker.ProcessUrlsByRegex(attrValue, RegexConstants.SRCSET_URL_REGEX,
+            String updatedValue = RegexWorker.ProcessStringByRegex(attrValue, RegexConstants.SRCSET_URL_REGEX,
                     url -> resolveAndSaveUrl(url, documentUrl));
             element.attr(attr, updatedValue);
         }
@@ -74,6 +77,10 @@ public class HtmlProcessor {
 
     private void processAttribute(Element element, String attr) {
         if (!element.hasAttr(attr)) return;
+
+        String url = element.attr(attr);
+        if (isBase64(url)) return;
+
         String absoluteUrl = element.absUrl(attr);
 
         FileSaveModel file = FilesWorker.SetFilesToSave(absoluteUrl, filesToSave);
@@ -82,7 +89,7 @@ public class HtmlProcessor {
 
     private String resolveAndSaveUrl(Matcher matcher, String documentUrl) {
         String url = matcher.group(1);
-        if (url == null || url.isEmpty()) return null;
+        if (url == null || url.isEmpty() || isBase64(url)) return null;
 
         String absoluteUrl = ScrapperWorker.ResolveAbsoluteUrl(documentUrl, url);
         FileSaveModel fileSave = FilesWorker.SetFilesToSave(absoluteUrl, filesToSave);
@@ -93,5 +100,20 @@ public class HtmlProcessor {
 
     private String getPathToSave(String fileName, SaveAsEnum saveAs) {
         return PathHelper.GetUnixPath(saveAs, null, fileName);
+    }
+
+    public static boolean isBase64(String input) {
+        if (input == null || input.isEmpty()) {
+            return false;
+        }
+
+        String base64Find = ";base64,";
+        // Видаляємо Data URL Scheme, якщо є
+        if (input.contains(base64Find)) {
+            int indexCutTo = input.indexOf(base64Find) + base64Find.length();
+            input = input.substring(indexCutTo);
+        }
+
+        return Base64.isBase64(input);
     }
 }

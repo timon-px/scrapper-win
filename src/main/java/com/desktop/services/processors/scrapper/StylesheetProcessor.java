@@ -1,8 +1,9 @@
-package com.desktop.services.processor;
+package com.desktop.services.processors.scrapper;
 
 import com.desktop.services.config.constants.ScrapperConstants;
 import com.desktop.services.config.enums.SaveAsEnum;
 import com.desktop.services.models.FileSaveModel;
+import com.desktop.services.processors.interfaces.IScrapperProcess;
 import com.desktop.services.storage.IStorageWorker;
 import com.desktop.services.utils.FilesWorker;
 import com.desktop.services.utils.PathHelper;
@@ -20,12 +21,11 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class StylesheetProcessor {
+public class StylesheetProcessor implements IScrapperProcess {
     private final IStorageWorker storageWorker;
     private final Path stylesheetPath;
     private final ConcurrentHashMap<String, FileSaveModel> filesToSave;
@@ -39,7 +39,9 @@ public class StylesheetProcessor {
         this.pathResolver = new CssPathResolver();
     }
 
-    public CompletableFuture<Void> SaveStylesheetsAsync(Document document) {
+
+    @Override
+    public CompletableFuture<Void> ProcessAsync(Document document) {
         String documentUrl = ScrapperWorker.ResolveDocumentUrl(document);
 
         Elements styles = ScrapperWorker.ScrapStylesheets(document);

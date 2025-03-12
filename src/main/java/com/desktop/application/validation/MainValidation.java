@@ -1,4 +1,4 @@
-package com.desktop.scrapper.validation;
+package com.desktop.application.validation;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -7,7 +7,7 @@ import java.nio.file.Paths;
 public class MainValidation {
     public static String validatePathField(String path) {
         if (path == null || path.isBlank()) {
-      ;      return "Path field is empty! Please enter a valid path";
+            return "Path field is empty! Please enter a valid path";
         }
         Path dir = Paths.get(path);
 

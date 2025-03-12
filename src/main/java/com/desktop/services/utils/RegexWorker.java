@@ -13,29 +13,9 @@ public class RegexWorker {
      * @param modifyUrlFunction A function that defines how to modify each matched URL.
      * @return The modified content.
      */
-    public static String ProcessUrlsByRegex(String content, String regexPattern, Function<Matcher, String> modifyUrlFunction) {
+    public static String ProcessStringByRegex(String content, String regexPattern, Function<Matcher, String> modifyUrlFunction) {
         Matcher matcher = initMatcher(content, regexPattern);
         StringBuilder modifiedContent = new StringBuilder();
-
-        return processMatcher(matcher, modifiedContent, modifyUrlFunction).toString();
-    }
-
-    /**
-     * Replaces URLs in the based on the given regex and modification function.
-     *
-     * @param content              The content to process.
-     * @param regexPattern         The regex pattern to match URLs.
-     * @param modifyUrlFunction    A function that defines how to modify each matched URL.
-     * @param matcherStartPosition A number of the start position in matcher
-     * @return The modified content.
-     */
-    public static String ProcessUrlsByRegex(String content, String regexPattern, Function<Matcher, String> modifyUrlFunction, Integer matcherStartPosition) {
-        Matcher matcher = initMatcher(content, regexPattern);
-        StringBuilder modifiedContent = new StringBuilder();
-
-        if (matcherStartPosition > 0) {
-            matcher.region(matcherStartPosition, content.length());
-        }
 
         return processMatcher(matcher, modifiedContent, modifyUrlFunction).toString();
     }

@@ -3,7 +3,6 @@ package com.desktop.services.storage;
 import com.desktop.services.config.enums.SaveAsEnum;
 import com.desktop.services.models.FileSaveModel;
 import com.desktop.services.utils.PathHelper;
-import org.apache.commons.io.FilenameUtils;
 
 import java.io.IOException;
 import java.net.URI;
@@ -78,13 +77,11 @@ public class StorageWorker implements IStorageWorker {
     }
 
     @Override
-    public CompletableFuture<Void> InitFoldersAsync(Collection<FileSaveModel> fileSaveModels, Path mainPath) {
-        return CompletableFuture.runAsync(() -> {
-            fileSaveModels.parallelStream().forEach(model -> {
-                Path path = PathHelper.GetPath(model.getFileType(), mainPath.toString());
-                createDirectoriesIfNotExists(path);
-            });
-        });
+    public void InitFoldersAsync(Collection<FileSaveModel> fileSaveModels, Path mainPath) {
+        CompletableFuture.runAsync(() -> fileSaveModels.parallelStream().forEach(model -> {
+            Path path = PathHelper.GetPath(model.getFileType(), mainPath.toString());
+            createDirectoriesIfNotExists(path);
+        })).join();
     }
 
     private CompletableFuture<String> sendRequestAsync(HttpRequest request, Path destination, String url) {

@@ -1,8 +1,8 @@
-package com.desktop.scrapper.controller;
+package com.desktop.application.controller;
 
 import com.desktop.dto.ScrapperRequestDTO;
-import com.desktop.scrapper.utils.FileExplorerHelper;
-import com.desktop.scrapper.validation.MainValidation;
+import com.desktop.application.utils.FileExplorerHelper;
+import com.desktop.application.validation.MainValidation;
 import com.desktop.dto.ScrapperResponseDTO;
 import com.desktop.services.services.classes.ScrapperService;
 import javafx.application.Platform;

@@ -15,5 +15,5 @@ public interface IStorageWorker {
 
     CompletableFuture<String> SaveFileAsync(String url, FileSaveModel fileSaveModel, Path mainPath);
 
-    CompletableFuture<Void> InitFoldersAsync(Collection<FileSaveModel> fileSaveModels, Path mainPath) throws IOException;
+    void InitFoldersAsync(Collection<FileSaveModel> fileSaveModels, Path mainPath) throws IOException;
 }

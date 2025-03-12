@@ -4,9 +4,11 @@ import com.desktop.dto.ScrapperRequestDTO;
 import com.desktop.services.config.constants.ScrapperConstants;
 import com.desktop.dto.ScrapperResponseDTO;
 import com.desktop.services.models.FileSaveModel;
-import com.desktop.services.processor.FilesProcessor;
-import com.desktop.services.processor.HtmlProcessor;
-import com.desktop.services.processor.StylesheetProcessor;
+import com.desktop.services.processors.FilesProcessor;
+import com.desktop.services.processors.interfaces.IFilesProcessor;
+import com.desktop.services.processors.interfaces.IScrapperProcess;
+import com.desktop.services.processors.scrapper.HtmlProcessor;
+import com.desktop.services.processors.scrapper.StylesheetProcessor;
 import com.desktop.services.services.interfaces.IScrapperService;
 import com.desktop.services.storage.IStorageWorker;
 import com.desktop.services.storage.StorageWorker;
@@ -65,15 +67,16 @@ public class ScrapperService implements IScrapperService {
     }
 
     private CompletableFuture<Void> startProcesses(Document document, Path path, ConcurrentHashMap<String, FileSaveModel> filesToSaveList, IStorageWorker storageWorker) {
-        StylesheetProcessor stylesheetProcessor = new StylesheetProcessor(storageWorker, path, filesToSaveList);
-        FilesProcessor filesProcessor = new FilesProcessor(storageWorker, path);
-        HtmlProcessor htmlProcessor = new HtmlProcessor(filesToSaveList);
+        IScrapperProcess stylesheetProcessor = new StylesheetProcessor(storageWorker, path, filesToSaveList);
+        IScrapperProcess htmlProcessor = new HtmlProcessor(filesToSaveList);
 
-        return stylesheetProcessor.SaveStylesheetsAsync(document)
+        IFilesProcessor filesProcessor = new FilesProcessor(storageWorker, path);
+
+        return stylesheetProcessor.ProcessAsync(document)
                 .thenRun(() -> progress.set(progress.get() + 0.05))
-                .thenCompose(unused -> htmlProcessor.SaveHtmlMediaAsync(document))
+                .thenCompose(unused -> htmlProcessor.ProcessAsync(document))
                 .thenRun(() -> progress.set(progress.get() + 0.05))
-                .thenCompose(unused -> filesProcessor.SaveFilesAsync(filesToSaveList, progress));
+                .thenCompose(unused -> filesProcessor.SaveAsync(filesToSaveList, progress));
     }
 
     private void replaceHrefToOffer(Document document, boolean isNeeded) {

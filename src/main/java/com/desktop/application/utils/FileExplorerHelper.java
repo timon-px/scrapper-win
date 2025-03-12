@@ -1,4 +1,4 @@
-package com.desktop.scrapper.utils;
+package com.desktop.application.utils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

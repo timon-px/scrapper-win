@@ -12,7 +12,7 @@ public class StylesheetWorker {
 
     private static String processUrls(String cssContent, Function<String, String> processImports, Function<String, String> processExternal) {
         return RegexWorker.
-                ProcessUrlsByRegex(cssContent,
+                ProcessStringByRegex(cssContent,
                         RegexConstants.DEPENDENCIES_CSS_URL_REGEX,
                         (matcher -> processUrlsMatcher(matcher, processImports, processExternal)));
     }
