@@ -11,6 +11,8 @@ public interface IStorageWorker {
 
     Path GetFolderPath(String initName);
 
+    CompletableFuture<Path> SaveContentAsync(String content, String fileName);
+
     CompletableFuture<Path> SaveContentAsync(String content, Path folderPath, String fileName);
 
     CompletableFuture<String> SaveFileAsync(String url, FileSaveModel fileSaveModel, Path mainPath);
