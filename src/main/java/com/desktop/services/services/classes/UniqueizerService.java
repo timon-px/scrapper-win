@@ -6,6 +6,7 @@ import com.desktop.services.config.constants.UniqueizerConstants;
 import com.desktop.services.services.interfaces.IUniqueizerService;
 import com.desktop.services.storage.IStorageWorker;
 import com.desktop.services.storage.StorageWorker;
+import com.desktop.services.utils.CharSwapper;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.TextNode;
@@ -43,8 +44,7 @@ public class UniqueizerService implements IUniqueizerService {
             document.traverse((node, depth) -> {
                 if (node instanceof TextNode textNode) {
                     // Transform the text (e.g., to uppercase)
-                    System.out.println(textNode.text());
-                    String transformedText = textNode.text().toUpperCase();
+                    String transformedText = CharSwapper.ConvertChars(textNode.getWholeText());
                     textNode.text(transformedText);
                 }
             });
