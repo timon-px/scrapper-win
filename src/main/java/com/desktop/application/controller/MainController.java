@@ -1,12 +1,15 @@
 package com.desktop.application.controller;
 
-import com.desktop.dto.ScrapperRequestDTO;
+import com.desktop.application.controller.worker.ScrapperControllerWorker;
+import com.desktop.application.controller.worker.interfaces.IControllerWorker;
 import com.desktop.application.utils.FileExplorerHelper;
 import com.desktop.application.validation.MainValidation;
+import com.desktop.dto.ScrapperRequestDTO;
 import com.desktop.dto.ScrapperResponseDTO;
 import com.desktop.services.services.classes.ScrapperService;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.stage.DirectoryChooser;
@@ -17,11 +20,14 @@ import javax.swing.filechooser.FileSystemView;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public class MainController {
     private static final Logger log = LoggerFactory.getLogger(MainController.class);
+    private static final IControllerWorker scrapperControllerWorker = new ScrapperControllerWorker();
+    private static List<Node> disableNodes;
 
     @FXML
     private Button browse_btn;
@@ -44,7 +50,12 @@ public class MainController {
     private CheckBox replace_to_offer_cbx;
 
     @FXML
+    private TabPane tab_pane;
+
+    @FXML
     private void initialize() {
+        disableNodes = List.of(browse_btn, submit_btn, dir_path_tf, web_url_tf, replace_to_offer_cbx);
+
         dirPathTFInit(dir_path_tf);
         browseBtnInit(browse_btn);
         progressBarInit(progress_bar);
@@ -82,7 +93,7 @@ public class MainController {
     private void handleSubmit() {
         String webUrl = web_url_tf.getText().trim();
         String dirPath = dir_path_tf.getText().trim();
-        boolean isReplace = replace_to_offer_cbx.isSelected();
+        boolean isReplaceSelected = replace_to_offer_cbx.isSelected();
 
         if (!validateFields(dirPath, webUrl)) return;
         Path folderPath = Paths.get(dirPath);
@@ -90,7 +101,7 @@ public class MainController {
         ScrapperService scrapperService = new ScrapperService();
         initSubmitAction(scrapperService);
 
-        CompletableFuture<ScrapperResponseDTO> future = scrapperService.GetWeb(new ScrapperRequestDTO(folderPath, webUrl, isReplace));
+        CompletableFuture<ScrapperResponseDTO> future = scrapperService.GetWeb(new ScrapperRequestDTO(folderPath, webUrl, isReplaceSelected));
 
         future.thenAccept(response -> Platform.runLater(() -> {
             String responseMessage = response.getMessage();
@@ -105,27 +116,23 @@ public class MainController {
         String dirError = MainValidation.validatePathField(dirPath);
         String urlError = MainValidation.validateUrlField(webUrl);
 
-        dir_path_error_lbl.setText(dirError != null ? dirError : "");
-        web_url_error_lbl.setText(urlError != null ? urlError : "");
+        scrapperControllerWorker.SetErrorLabel(dir_path_error_lbl, dirError);
+        scrapperControllerWorker.SetErrorLabel(web_url_error_lbl, urlError);
 
         return dirError == null && urlError == null;
     }
 
     private void initSubmitAction(ScrapperService scrapperService) {
-        submit_btn.setDisable(true);
-        browse_btn.setDisable(true);
-        progress_bar.setVisible(true);
-        progress_bar.setProgress(0);
+        scrapperControllerWorker.SetLoading(true, disableNodes, progress_bar);
 
+        progress_bar.setProgress(0);
         progress_bar.progressProperty().bind(scrapperService.progressProperty());
     }
 
     private void successSubmitAction(String responseMessage) {
         Path responsePath = Paths.get(responseMessage);
 
-        submit_btn.setDisable(false);
-        browse_btn.setDisable(false);
-        progress_bar.setVisible(false);
+        scrapperControllerWorker.SetLoading(false, disableNodes, progress_bar);
 
         progress_bar.progressProperty().unbind();
         Optional<ButtonType> result = showAlert(Alert.AlertType.CONFIRMATION,
@@ -139,10 +146,8 @@ public class MainController {
     }
 
     private void errorSubmitAction(String responseMessage) {
+        scrapperControllerWorker.SetLoading(false, disableNodes, progress_bar);
         progress_bar.progressProperty().unbind(); // Unbind when done
-        submit_btn.setDisable(false);
-        browse_btn.setDisable(false);
-        progress_bar.setVisible(false);
         showAlert(Alert.AlertType.ERROR, "Error!", "Something went wrong!", responseMessage);
     }
 

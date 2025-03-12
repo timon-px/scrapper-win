@@ -14,7 +14,7 @@ public class ScrapperApplication extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(ScrapperApplication.class.getResource("main-view.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 640, 480);
+        Scene scene = new Scene(fxmlLoader.load(), 720, 540);
         setStylesheets(scene, "index.css");
 
         stage.setTitle("Scrapper");
