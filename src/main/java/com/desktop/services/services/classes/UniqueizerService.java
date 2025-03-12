@@ -1,7 +1,7 @@
 package com.desktop.services.services.classes;
 
-import com.desktop.dto.ScrapperResponseDTO;
 import com.desktop.dto.UniqueizerRequestDTO;
+import com.desktop.dto.UniqueizerResponseDTO;
 import com.desktop.services.config.constants.UniqueizerConstants;
 import com.desktop.services.services.interfaces.IUniqueizerService;
 import com.desktop.services.storage.IStorageWorker;
@@ -17,7 +17,7 @@ import java.util.concurrent.CompletableFuture;
 
 public class UniqueizerService implements IUniqueizerService {
     @Override
-    public CompletableFuture<ScrapperResponseDTO> UniqueizeWeb(UniqueizerRequestDTO uniqueizerRequest) {
+    public CompletableFuture<UniqueizerResponseDTO> UniqueizeWeb(UniqueizerRequestDTO uniqueizerRequest) {
         IStorageWorker storageWorker = new StorageWorker(uniqueizerRequest.getSavePath());
 
         return CompletableFuture.supplyAsync(() -> {
@@ -29,9 +29,9 @@ public class UniqueizerService implements IUniqueizerService {
                         .thenCompose(unused -> storageWorker.SaveContentAsync(document.outerHtml(), UniqueizerConstants.UNIQUE_HTML_NAME))
                         .thenApply(finalPath -> {
                             Path responsePath = finalPath.getParent().toAbsolutePath();
-                            return new ScrapperResponseDTO(true, responsePath.toString());
+                            return new UniqueizerResponseDTO(true, responsePath.toString());
                         })
-                        .exceptionally(ex -> new ScrapperResponseDTO(false, "Error: " + ex.getMessage())).join();
+                        .exceptionally(ex -> new UniqueizerResponseDTO(false, "Error: " + ex.getMessage())).join();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

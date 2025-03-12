@@ -1,8 +1,5 @@
 package com.desktop.dto;
 
-import java.io.File;
-import java.nio.file.Path;
-
 public class UniqueizerResponseDTO {
     private boolean success;
     private String message;

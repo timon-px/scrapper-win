@@ -1,8 +1,6 @@
 package com.desktop.application.validation;
 
 import org.apache.tika.Tika;
-import org.apache.tika.mime.MimeType;
-import org.apache.tika.mime.MimeTypes;
 
 import java.io.File;
 import java.io.IOException;

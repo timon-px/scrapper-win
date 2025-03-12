@@ -4,7 +4,6 @@ import com.desktop.dto.ScrapperRequestDTO;
 import com.desktop.dto.ScrapperResponseDTO;
 import javafx.beans.property.DoubleProperty;
 
-import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
 
 public interface IScrapperService {

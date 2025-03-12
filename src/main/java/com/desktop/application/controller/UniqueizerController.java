@@ -3,10 +3,8 @@ package com.desktop.application.controller;
 import com.desktop.application.controller.worker.ControllerWorker;
 import com.desktop.application.controller.worker.interfaces.IControllerWorker;
 import com.desktop.application.validation.UniqueizerValidation;
-import com.desktop.dto.ScrapperRequestDTO;
-import com.desktop.dto.ScrapperResponseDTO;
 import com.desktop.dto.UniqueizerRequestDTO;
-import com.desktop.services.services.classes.ScrapperService;
+import com.desktop.dto.UniqueizerResponseDTO;
 import com.desktop.services.services.classes.UniqueizerService;
 import com.desktop.services.services.interfaces.IUniqueizerService;
 import javafx.application.Platform;
@@ -17,7 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -95,7 +92,7 @@ public class UniqueizerController {
         IUniqueizerService uniqueizerService = new UniqueizerService();
 
 
-        CompletableFuture<ScrapperResponseDTO> future = uniqueizerService.UniqueizeWeb(new UniqueizerRequestDTO(file, saveDir));
+        CompletableFuture<UniqueizerResponseDTO> future = uniqueizerService.UniqueizeWeb(new UniqueizerRequestDTO(file, saveDir));
         future.thenAccept(response -> Platform.runLater(() -> {
             String responseMessage = response.getMessage();
             successSubmitAction(responseMessage);
