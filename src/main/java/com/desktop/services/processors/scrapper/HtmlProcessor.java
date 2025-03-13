@@ -1,10 +1,10 @@
 package com.desktop.services.processors.scrapper;
 
-import com.desktop.services.config.constants.HTMLConstants;
+import com.desktop.services.config.constants.HtmlConstants;
 import com.desktop.services.config.constants.RegexConstants;
 import com.desktop.services.config.enums.SaveAsEnum;
 import com.desktop.services.models.FileSaveModel;
-import com.desktop.services.processors.interfaces.IScrapperProcess;
+import com.desktop.services.processors.interfaces.IDocumentProcess;
 import com.desktop.services.utils.FilesWorker;
 import com.desktop.services.utils.PathHelper;
 import com.desktop.services.utils.RegexWorker;
@@ -22,7 +22,7 @@ import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
-public class HtmlProcessor implements IScrapperProcess {
+public class HtmlProcessor implements IDocumentProcess {
     private final ConcurrentHashMap<String, FileSaveModel> filesToSave;
 
     public HtmlProcessor(ConcurrentHashMap<String, FileSaveModel> filesToSave) {
@@ -59,13 +59,13 @@ public class HtmlProcessor implements IScrapperProcess {
     }
 
     private void processSimpleAttr(Element element) {
-        for (String attr : HTMLConstants.getSimpleSaveAttr()) { // Move to constants class
+        for (String attr : HtmlConstants.getSimpleSaveAttr()) { // Move to constants class
             processAttribute(element, attr);
         }
     }
 
     private void processComplexAttr(Element element, String documentUrl) {
-        for (String attr : HTMLConstants.getComplexSaveAttr()) {
+        for (String attr : HtmlConstants.getComplexSaveAttr()) {
             if (!element.hasAttr(attr)) continue;
 
             String attrValue = element.attr(attr);

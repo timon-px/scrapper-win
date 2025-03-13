@@ -4,6 +4,6 @@ import org.jsoup.nodes.Document;
 
 import java.util.concurrent.CompletableFuture;
 
-public interface IScrapperProcess {
+public interface IDocumentProcess {
     CompletableFuture<Void> ProcessAsync(Document document);
 }

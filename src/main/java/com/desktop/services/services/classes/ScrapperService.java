@@ -1,12 +1,12 @@
 package com.desktop.services.services.classes;
 
 import com.desktop.dto.ScrapperRequestDTO;
-import com.desktop.services.config.constants.ScrapperConstants;
 import com.desktop.dto.ScrapperResponseDTO;
+import com.desktop.services.config.constants.ScrapperConstants;
 import com.desktop.services.models.FileSaveModel;
-import com.desktop.services.processors.FilesProcessor;
-import com.desktop.services.processors.interfaces.IFilesProcessor;
-import com.desktop.services.processors.interfaces.IScrapperProcess;
+import com.desktop.services.processors.FilesProcess;
+import com.desktop.services.processors.interfaces.IDocumentProcess;
+import com.desktop.services.processors.interfaces.IFilesProcess;
 import com.desktop.services.processors.scrapper.HtmlProcessor;
 import com.desktop.services.processors.scrapper.StylesheetProcessor;
 import com.desktop.services.services.interfaces.IScrapperService;
@@ -67,10 +67,10 @@ public class ScrapperService implements IScrapperService {
     }
 
     private CompletableFuture<Void> startProcesses(Document document, Path path, ConcurrentHashMap<String, FileSaveModel> filesToSaveList, IStorageWorker storageWorker) {
-        IScrapperProcess stylesheetProcessor = new StylesheetProcessor(storageWorker, path, filesToSaveList);
-        IScrapperProcess htmlProcessor = new HtmlProcessor(filesToSaveList);
+        IDocumentProcess stylesheetProcessor = new StylesheetProcessor(storageWorker, path, filesToSaveList);
+        IDocumentProcess htmlProcessor = new HtmlProcessor(filesToSaveList);
 
-        IFilesProcessor filesProcessor = new FilesProcessor(storageWorker, path);
+        IFilesProcess filesProcessor = new FilesProcess(storageWorker, path);
 
         return stylesheetProcessor.ProcessAsync(document)
                 .thenRun(() -> progress.set(progress.get() + 0.05))

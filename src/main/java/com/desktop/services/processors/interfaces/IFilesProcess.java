@@ -6,6 +6,6 @@ import javafx.beans.property.DoubleProperty;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
-public interface IFilesProcessor {
+public interface IFilesProcess {
     CompletableFuture<Void> SaveAsync(ConcurrentHashMap<String, FileSaveModel> filesToSave, DoubleProperty progress);
 }

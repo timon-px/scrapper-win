@@ -3,13 +3,13 @@ package com.desktop.services.services.classes;
 import com.desktop.dto.UniqueizerRequestDTO;
 import com.desktop.dto.UniqueizerResponseDTO;
 import com.desktop.services.config.constants.UniqueizerConstants;
+import com.desktop.services.processors.interfaces.IDocumentProcess;
+import com.desktop.services.processors.uniqueizer.UniqueizerProcessor;
 import com.desktop.services.services.interfaces.IUniqueizerService;
 import com.desktop.services.storage.IStorageWorker;
 import com.desktop.services.storage.StorageWorker;
-import com.desktop.services.utils.CharSwapper;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.TextNode;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,14 +40,7 @@ public class UniqueizerService implements IUniqueizerService {
     }
 
     private CompletableFuture<Void> startProcesses(Document document) {
-        return CompletableFuture.runAsync(() -> {
-            document.traverse((node, depth) -> {
-                if (node instanceof TextNode textNode) {
-                    // Transform the text (e.g., to uppercase)
-                    String transformedText = CharSwapper.ConvertChars(textNode.getWholeText());
-                    textNode.text(transformedText);
-                }
-            });
-        });
+        IDocumentProcess uniqueizerProcessor = new UniqueizerProcessor();
+        return uniqueizerProcessor.ProcessAsync(document);
     }
 }

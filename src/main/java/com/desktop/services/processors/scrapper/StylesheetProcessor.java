@@ -3,7 +3,7 @@ package com.desktop.services.processors.scrapper;
 import com.desktop.services.config.constants.ScrapperConstants;
 import com.desktop.services.config.enums.SaveAsEnum;
 import com.desktop.services.models.FileSaveModel;
-import com.desktop.services.processors.interfaces.IScrapperProcess;
+import com.desktop.services.processors.interfaces.IDocumentProcess;
 import com.desktop.services.storage.IStorageWorker;
 import com.desktop.services.utils.FilesWorker;
 import com.desktop.services.utils.PathHelper;
@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class StylesheetProcessor implements IScrapperProcess {
+public class StylesheetProcessor implements IDocumentProcess {
     private final IStorageWorker storageWorker;
     private final Path stylesheetPath;
     private final ConcurrentHashMap<String, FileSaveModel> filesToSave;

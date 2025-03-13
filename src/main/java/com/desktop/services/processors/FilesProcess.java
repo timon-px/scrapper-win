@@ -1,7 +1,7 @@
 package com.desktop.services.processors;
 
 import com.desktop.services.models.FileSaveModel;
-import com.desktop.services.processors.interfaces.IFilesProcessor;
+import com.desktop.services.processors.interfaces.IFilesProcess;
 import com.desktop.services.storage.IStorageWorker;
 import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
@@ -13,11 +13,11 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class FilesProcessor implements IFilesProcessor {
+public class FilesProcess implements IFilesProcess {
     private final IStorageWorker storageWorker;
     private final Path mainPath;
 
-    public FilesProcessor(IStorageWorker storageWorker, Path mainPath) {
+    public FilesProcess(IStorageWorker storageWorker, Path mainPath) {
         this.storageWorker = storageWorker;
         this.mainPath = mainPath;
     }
