@@ -8,11 +8,21 @@ import java.security.SecureRandom;
 
 public class UniqueizerWorker {
     public static Elements ScrapProcessedMeta(Document document) {
-        // Вибираємо всі <style> із SRC
+        // Вибираємо всі <meta> із og:
         return document.select(getProcessMetaSelector());
     }
 
-    public static String GetRandomString(int length) {
+    public static Elements ScrapProcessedTags(Document document) {
+        // Вибираємо всі not excluded tags
+        return document.children().select(getProcessTagsSelector());
+    }
+
+    public static Elements ScrapImgTags(Document document) {
+        // Вибираємо всі not excluded tags
+        return document.select("img");
+    }
+
+    public static String GetRandomIntegerString(int length) {
         SecureRandom random = new SecureRandom();
         StringBuilder randomString = new StringBuilder();
         for (int i = 0; i < length; i++) {
@@ -20,6 +30,29 @@ public class UniqueizerWorker {
             randomString.append(number);
         }
         return randomString.toString();
+    }
+
+    public static String GetRandomCharString(int length) {
+        SecureRandom random = new SecureRandom();
+        StringBuilder randomString = new StringBuilder();
+        int randomBound = UniqueizerConstants.ALLOWED_TO_RANDOM_STRING.length();
+        for (int i = 0; i < length; i++) {
+            int randomId = random.nextInt(randomBound);
+            char randomChar = UniqueizerConstants.ALLOWED_TO_RANDOM_STRING.charAt(randomId);
+            randomString.append(randomChar);
+        }
+        return randomString.toString();
+    }
+
+    public static String GetRandomCharStringWithPrefix(int length) {
+        return GetRandomPrefix() + GetRandomCharString(length);
+    }
+
+    public static String GetRandomPrefix() {
+        SecureRandom random = new SecureRandom();
+        int randomId = random.nextInt(UniqueizerConstants.PREFIXES.size());
+
+        return UniqueizerConstants.PREFIXES.get(randomId);
     }
 
     private static String getProcessMetaSelector() {
@@ -33,5 +66,10 @@ public class UniqueizerWorker {
         }
 
         return builder.toString();
+    }
+
+    private static String getProcessTagsSelector() {
+        String excludedTags = String.join(", ", UniqueizerConstants.EXCLUDED_TAGS);
+        return "*" + ":not(" + excludedTags + ")";
     }
 }
