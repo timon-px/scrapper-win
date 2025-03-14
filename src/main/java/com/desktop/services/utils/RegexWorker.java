@@ -28,11 +28,11 @@ public class RegexWorker {
     private static StringBuilder processMatcher(Matcher matcher, StringBuilder modifiedContent, Function<Matcher, String> modifierFunction) {
         while (matcher.find()) {
             // Apply the custom modification function
-            String modifiedUrl = modifierFunction.apply(matcher);
-            if (modifiedUrl == null) continue;
+            String modifiedString = modifierFunction.apply(matcher);
+            if (modifiedString == null) continue;
 
             // Replace the matched URL with the modified version
-            matcher.appendReplacement(modifiedContent, modifiedUrl);
+            matcher.appendReplacement(modifiedContent, modifiedString);
         }
 
         // Append any remaining content after the last match

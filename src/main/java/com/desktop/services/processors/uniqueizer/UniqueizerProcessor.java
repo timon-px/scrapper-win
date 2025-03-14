@@ -1,9 +1,11 @@
 package com.desktop.services.processors.uniqueizer;
 
+import com.desktop.services.config.constants.RegexConstants;
 import com.desktop.services.config.constants.UniqueizerConstants;
 import com.desktop.services.processors.interfaces.IDocumentProcess;
 import com.desktop.services.utils.CharSwapper;
 import com.desktop.services.utils.ScrapperWorker;
+import com.desktop.services.utils.StylesheetWorker;
 import com.desktop.services.utils.UniqueizerWorker;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -13,6 +15,8 @@ import org.jsoup.select.Elements;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 public class UniqueizerProcessor implements IDocumentProcess {
@@ -26,21 +30,32 @@ public class UniqueizerProcessor implements IDocumentProcess {
     public CompletableFuture<Void> ProcessAsync(Document document) {
         List<CompletableFuture<Void>> futures = new ArrayList<>();
 
+        // Text replacement
         futures.add(processSwapCharsAsync(document));
+        // Adding or replacement meta tags
         futures.add(processMetaTags(document));
+        // Adding random data tag
         futures.add(processDataTags(document));
+        // Adding version (?v=) for connected files
         futures.add(processConnectedFiles(document));
+        // Replacing img alt
         futures.add(processImgTags(document));
-        futures.add(processEmptyDivs(document));
-        futures.add(appendEmptyScript(document));
+        // Adding or replacement unique classes
+        futures.add(processClasses(document));
+        // Changing colors
+        futures.add(processInlineStylesheetColors(document));
 
-        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+        // Adding divs and script at the end
+        CompletableFuture<Void> finalFuture = processEmptyDivs(document)
+                .thenCompose(unused -> processEmptyScript(document));
+
+        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+                .thenCompose(unused -> finalFuture);
     }
 
     private CompletableFuture<Void> processSwapCharsAsync(Document document) {
         return CompletableFuture.runAsync(() -> document.traverse((node, depth) -> {
             if (node instanceof TextNode textNode) {
-                // Transform the text (e.g., to uppercase)
                 String transformedText = CharSwapper.ConvertChars(textNode.getWholeText());
                 textNode.text(transformedText);
             }
@@ -51,9 +66,8 @@ public class UniqueizerProcessor implements IDocumentProcess {
         List<CompletableFuture<Void>> futures = new ArrayList<>();
         Elements metaTags = UniqueizerWorker.ScrapProcessedMeta(document);
 
-        for (Element metaTag : metaTags) {
+        for (Element metaTag : metaTags)
             futures.add(processTagAttrRandom(metaTag, "content"));
-        }
 
         return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
     }
@@ -106,9 +120,8 @@ public class UniqueizerProcessor implements IDocumentProcess {
         List<CompletableFuture<Void>> futures = new ArrayList<>();
         Elements imgTags = UniqueizerWorker.ScrapImgTags(document);
 
-        for (Element imgTag : imgTags) {
+        for (Element imgTag : imgTags)
             futures.add(processTagAttrRandom(imgTag, "alt", true));
-        }
 
         return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
     }
@@ -140,7 +153,7 @@ public class UniqueizerProcessor implements IDocumentProcess {
     }
 
     private void appendEmptyDiv(Document document) {
-        String randomString = UniqueizerWorker.GetRandomCharStringWithPrefix(12);
+        String randomString = UniqueizerWorker.GetRandomCharString(12);
 
         Element div = document.createElement("div");
         div.text(randomString);
@@ -149,14 +162,73 @@ public class UniqueizerProcessor implements IDocumentProcess {
         document.body().appendChild(div);
     }
 
-    private CompletableFuture<Void> appendEmptyScript(Document document) {
+    private CompletableFuture<Void> processEmptyScript(Document document) {
         return CompletableFuture.runAsync(() -> {
-            String randomString = UniqueizerWorker.GetRandomCharStringWithPrefix(12);
+            String randomString = UniqueizerWorker.GetRandomIntegerString(12);
 
             Element div = document.createElement("script");
             div.text("console.log('msg: " + randomString + "');");
 
             document.body().appendChild(div);
+        });
+    }
+
+    private CompletableFuture<Void> processClasses(Document document) {
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
+        Elements elements = UniqueizerWorker.ScrapTagsWithClasses(document);
+
+        for (Element element : elements)
+            futures.add(processClass(element));
+
+        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+    }
+
+    private CompletableFuture<Void> processClass(Element element) {
+        return cleanUniqueizerClass(element)
+                .thenRun(() -> {
+                    String randomString = UniqueizerWorker.GetRandomCharStringWithPrefix(12);
+                    element.addClass(randomString);
+                });
+    }
+
+    private CompletableFuture<Void> cleanUniqueizerClass(Element element) {
+        return CompletableFuture.runAsync(() -> {
+            Set<String> classList = element.classNames();
+
+            for (String className : classList) {
+                if (className.matches(RegexConstants.DATA_REPEAT_CHECK_REGEX))
+                    element.removeClass(className);
+            }
+        });
+    }
+
+    private CompletableFuture<Void> processInlineStylesheetColors(Document document) {
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
+        Elements stylesheets = ScrapperWorker.ScrapInlineStylesheets(document);
+
+        for (Element stylesheet : stylesheets) {
+            futures.add(processInlineStylesheetColorElement(stylesheet));
+        }
+
+        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+    }
+
+    private CompletableFuture<Void> processInlineStylesheetColorElement(Element element) {
+        return CompletableFuture.runAsync(() -> {
+            if (!element.hasAttr("style")) return;
+
+            String inlineStyle = element.attr("style");
+            Map<String, List<String>> stylesMap;
+
+            try {
+                stylesMap = StylesheetWorker.GetStylesMap(inlineStyle);
+            } catch (Exception e) {
+                return;
+            }
+
+            Map<String, List<String>> uniqueStyles = StylesheetWorker.ProcessUniqueStylesColors(stylesMap);
+
+            element.attr("style", StylesheetWorker.GetStylesString(uniqueStyles));
         });
     }
 }

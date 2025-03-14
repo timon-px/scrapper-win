@@ -7,5 +7,6 @@ public class RegexConstants {
     public static final String IMPORT_CSS_URL_REGEX = "@import\\s+(?:url\\(\\s*['\"]?|['\"])([^'\"\\s)]+)(?:['\"]?\\s*[\\)|\\\"])?";
     public static final String DEPENDENCIES_CSS_URL_REGEX = "(@import\\s+(?:url\\(\\s*['\"]?|['\"])([^'\"\\s)]+)(?:['\"]?\\s*[\\)|\\\"])?)|(url\\(\\s*(['\\\"]?)(?!data:)\\s*([^'\\\"()]+?\\.[a-zA-Z0-9]+(?:[?#][^'\\\"()]+?)?)\\s*\\4\\s*\\))";
 
-    public static final String DATA_REPEAT_CHECK_REGEX = "^(" + String.join("|", UniqueizerConstants.PREFIXES) + ")" + "([^\\s]*)$";
+    public static final String DATA_REPEAT_MATCH_REGEX = "(" + String.join("|", UniqueizerConstants.PREFIXES) + ")" + "([^\\s]*)";
+    public static final String DATA_REPEAT_CHECK_REGEX = "^" + DATA_REPEAT_MATCH_REGEX + "$";
 }

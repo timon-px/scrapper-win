@@ -18,8 +18,13 @@ public class UniqueizerWorker {
     }
 
     public static Elements ScrapImgTags(Document document) {
-        // Вибираємо всі not excluded tags
+        // Вибираємо всі images
         return document.select("img");
+    }
+
+    public static Elements ScrapTagsWithClasses(Document document) {
+        // Вибираємо всі tags with classes
+        return document.select("*[class]");
     }
 
     public static String GetRandomIntegerString(int length) {

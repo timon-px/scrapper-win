@@ -10,7 +10,8 @@ import org.jsoup.select.Elements;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
 
 public class ScrapperWorker {
     public static Elements ScrapStylesheets(Document document) {
@@ -51,7 +52,7 @@ public class ScrapperWorker {
     }
 
     public static Elements ScrapInlineStylesheets(Document document) {
-        // Вибираємо всі <style> із SRC
+        // Вибираємо всі inline styles
         return document.select("*[style]");
     }
 
