@@ -9,6 +9,7 @@ import com.desktop.services.utils.FilesWorker;
 import com.desktop.services.utils.PathHelper;
 import com.desktop.services.utils.RegexWorker;
 import com.desktop.services.utils.ScrapperWorker;
+import javafx.beans.property.DoubleProperty;
 import org.apache.commons.codec.binary.Base64;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -31,6 +32,11 @@ public class HtmlProcessor implements IDocumentProcess {
 
     @Override
     public CompletableFuture<Void> ProcessAsync(Document document) {
+        return ProcessAsync(document, null);
+    }
+
+    @Override
+    public CompletableFuture<Void> ProcessAsync(Document document, DoubleProperty progress) {
         Elements externalFiles = ScrapperWorker.ScrapAllExternalFiles(document);
         Elements scriptFiles = ScrapperWorker.ScrapScripts(document);
 

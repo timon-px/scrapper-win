@@ -7,6 +7,7 @@ import com.desktop.services.utils.CharSwapper;
 import com.desktop.services.utils.ScrapperWorker;
 import com.desktop.services.utils.StylesheetWorker;
 import com.desktop.services.utils.UniqueizerWorker;
+import javafx.beans.property.DoubleProperty;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.TextNode;
@@ -26,8 +27,14 @@ public class UniqueizerProcessor implements IDocumentProcess {
         RANDOM_STRING = UniqueizerWorker.GetRandomIntegerString(10);
     }
 
+
     @Override
     public CompletableFuture<Void> ProcessAsync(Document document) {
+        return ProcessAsync(document, null);
+    }
+
+    @Override
+    public CompletableFuture<Void> ProcessAsync(Document document, DoubleProperty progress) {
         List<CompletableFuture<Void>> futures = new ArrayList<>();
 
         // Text replacement
@@ -45,13 +52,21 @@ public class UniqueizerProcessor implements IDocumentProcess {
         // Changing colors
         futures.add(processInlineStylesheetColors(document));
 
+        for (CompletableFuture<Void> future : futures) {
+            future.thenRun(() -> progress.set(progress.get() + 0.1));
+        }
+
         // Adding divs and script at the end
         CompletableFuture<Void> finalFuture = processEmptyDivs(document)
-                .thenCompose(unused -> processEmptyScript(document));
+                .thenRun(() -> progress.set(progress.get() + 0.1))
+                .thenCompose(unused -> processEmptyScript(document))
+                .thenRun(() -> progress.set(progress.get() + 0.1));
 
         return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
-                .thenCompose(unused -> finalFuture);
+                .thenCompose(unused -> finalFuture)
+                .thenRun(() -> progress.set(1));
     }
+
 
     private CompletableFuture<Void> processSwapCharsAsync(Document document) {
         return CompletableFuture.runAsync(() -> document.traverse((node, depth) -> {

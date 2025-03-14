@@ -83,13 +83,13 @@ public class UniqueizerController {
         String savePath = save_path_tf.getText().trim();
 
         if (!validateFields(filePath, savePath)) return;
-        initSubmitAction();
 
         Path fileDir = Paths.get(filePath);
         Path saveDir = Paths.get(savePath);
         File file = fileDir.toFile();
 
         IUniqueizerService uniqueizerService = new UniqueizerService();
+        initSubmitAction(uniqueizerService);
 
 
         CompletableFuture<UniqueizerResponseDTO> future = uniqueizerService.UniqueizeWeb(new UniqueizerRequestDTO(file, saveDir));
@@ -112,11 +112,11 @@ public class UniqueizerController {
         return fileError == null && saveError == null;
     }
 
-    private void initSubmitAction() {
+    private void initSubmitAction(IUniqueizerService uniqueizerService) {
         controllerWorker.SetLoading(true, disableNodes, progress_bar);
 
         progress_bar.setProgress(0);
-//        progress_bar.progressProperty().bind(scrapperService.progressProperty());
+        progress_bar.progressProperty().bind(uniqueizerService.progressProperty());
     }
 
     private void successSubmitAction(String responseMessage) {

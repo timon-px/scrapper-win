@@ -9,6 +9,7 @@ import com.desktop.services.utils.FilesWorker;
 import com.desktop.services.utils.PathHelper;
 import com.desktop.services.utils.ScrapperWorker;
 import com.desktop.services.utils.StylesheetWorker;
+import javafx.beans.property.DoubleProperty;
 import org.apache.commons.io.FilenameUtils;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
@@ -39,9 +40,13 @@ public class StylesheetProcessor implements IDocumentProcess {
         this.pathResolver = new CssPathResolver();
     }
 
-
     @Override
     public CompletableFuture<Void> ProcessAsync(Document document) {
+        return ProcessAsync(document, null);
+    }
+
+    @Override
+    public CompletableFuture<Void> ProcessAsync(Document document, DoubleProperty progress) {
         String documentUrl = ScrapperWorker.ResolveDocumentUrl(document);
 
         Elements styles = ScrapperWorker.ScrapStylesheets(document);

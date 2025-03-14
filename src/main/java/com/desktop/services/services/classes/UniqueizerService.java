@@ -8,6 +8,8 @@ import com.desktop.services.processors.uniqueizer.UniqueizerProcessor;
 import com.desktop.services.services.interfaces.IUniqueizerService;
 import com.desktop.services.storage.IStorageWorker;
 import com.desktop.services.storage.StorageWorker;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
@@ -17,6 +19,12 @@ import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
 
 public class UniqueizerService implements IUniqueizerService {
+    private final DoubleProperty progress = new SimpleDoubleProperty(0.0);
+
+    public DoubleProperty progressProperty() {
+        return progress;
+    }
+
     @Override
     public CompletableFuture<UniqueizerResponseDTO> UniqueizeWeb(UniqueizerRequestDTO uniqueizerRequest) {
         IStorageWorker storageWorker = new StorageWorker(uniqueizerRequest.getSavePath());
@@ -41,6 +49,6 @@ public class UniqueizerService implements IUniqueizerService {
 
     private CompletableFuture<Void> startProcesses(Document document) {
         IDocumentProcess uniqueizerProcessor = new UniqueizerProcessor();
-        return uniqueizerProcessor.ProcessAsync(document);
+        return uniqueizerProcessor.ProcessAsync(document, progress);
     }
 }
