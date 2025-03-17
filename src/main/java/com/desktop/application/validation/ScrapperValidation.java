@@ -4,14 +4,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public class MainValidation {
+public class ScrapperValidation {
     public static String validatePathField(String path) {
         if (path == null || path.isBlank()) {
             return "Path field is empty! Please enter a valid path";
         }
         Path dir = Paths.get(path);
 
-        if (!Files.exists(dir)) {
+        if (!Files.exists(dir) || !Files.isDirectory(dir)) {
             return "Directory doesn't exist! Please choose a directory or create a new one";
         }
 

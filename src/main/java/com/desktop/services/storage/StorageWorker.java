@@ -38,6 +38,11 @@ public class StorageWorker implements IStorageWorker {
     }
 
     @Override
+    public CompletableFuture<Path> SaveContentAsync(String content, String fileName) {
+        return SaveContentAsync(content, baseLocation, fileName);
+    }
+
+    @Override
     public CompletableFuture<Path> SaveContentAsync(String content, Path folderPath, String fileName) {
         return CompletableFuture.supplyAsync(() -> {
             Path filePath = folderPath.resolve(fileName);
