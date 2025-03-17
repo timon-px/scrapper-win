@@ -4,13 +4,9 @@ import com.desktop.services.config.enums.SaveAsEnum;
 import com.desktop.services.models.FileSaveModel;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.tika.Tika;
-import org.apache.tika.mime.MimeTypes;
-import org.apache.tika.mime.MimeTypesReader;
 
-import java.net.*;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -19,7 +15,7 @@ public class FilesWorker {
 
     public static FileSaveModel SetFilesToSave(String absoluteUrl, ConcurrentHashMap<String, FileSaveModel> filesToSave) {
         return filesToSave.computeIfAbsent(absoluteUrl, url -> {
-            String fileName = FilenameUtils.getName(url);
+            String fileName = FilenameUtils.getName(URLDecoder.decode(url, StandardCharsets.UTF_8));
             String cleanName = ScrapperWorker.CleanName(fileName);
             String uniqueName = getUniqueName(cleanName, filesToSave.values());
             SaveAsEnum fileType = GetFileType(url);
