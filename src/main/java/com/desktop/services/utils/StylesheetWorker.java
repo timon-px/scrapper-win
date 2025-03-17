@@ -127,5 +127,4 @@ public class StylesheetWorker {
 
         return Color.rgb(red, green, blue, opacity).getHex();
     }
-
 }

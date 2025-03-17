@@ -3,7 +3,7 @@ package com.desktop.services.processors;
 import com.desktop.services.models.FileSaveModel;
 import com.desktop.services.processors.interfaces.IFilesProcess;
 import com.desktop.services.storage.IStorageWorker;
-import javafx.application.Platform;
+import com.desktop.services.utils.DocumentWorker;
 import javafx.beans.property.DoubleProperty;
 
 import java.nio.file.Path;
@@ -33,7 +33,7 @@ public class FilesProcess implements IFilesProcess {
         }
 
         double baseProgress = progress.get() + 0.05;
-        updateProgress(progress, baseProgress);
+        DocumentWorker.UpdateProgress(progress, baseProgress);
 
         List<CompletableFuture<String>> downloadFutures = initAsyncDownloads(filesToSave, progress, baseProgress);
 
@@ -61,7 +61,7 @@ public class FilesProcess implements IFilesProcess {
             future.thenRun(() -> {
                 int completed = completedFiles.incrementAndGet();
                 double fileProgress = (double) completed / totalFiles * downloadWeight;
-                updateProgress(progress, fileProgress + baseProgress);
+                DocumentWorker.UpdateProgress(progress, fileProgress + baseProgress);
             }).exceptionally(throwable -> {
                 System.err.println("Download failed: " + throwable.getMessage());
                 return null;
@@ -71,9 +71,5 @@ public class FilesProcess implements IFilesProcess {
         }
 
         return downloadFutures;
-    }
-
-    private void updateProgress(DoubleProperty progress, double addValue) {
-        Platform.runLater(() -> progress.set(Math.min(addValue, 1.0)));
     }
 }

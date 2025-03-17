@@ -3,69 +3,12 @@ package com.desktop.services.utils;
 import com.desktop.services.config.constants.RegexConstants;
 import com.desktop.services.config.constants.ScrapperWorkerConstants;
 import com.desktop.services.config.enums.SaveAsEnum;
-import org.apache.commons.io.FilenameUtils;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Arrays;
-import java.util.List;
 
 public class ScrapperWorker {
-    public static Elements ScrapStylesheets(Document document) {
-        // Вибираємо всі <link> із CSS
-        Elements cssLinks = document.select("link[rel*='stylesheet'][href]");
-        Elements cssElements = new Elements();
-
-        for (Element cssLink : cssLinks) {
-            String href = cssLink.attr("href");
-            String cssName = FilenameUtils.getName(href);
-
-            if (cssName.contains(".css")) {
-                cssElements.add(cssLink);
-            }
-        }
-
-        return cssElements;
-    }
-
-    public static Elements ScrapAllExternalFiles(Document document) {
-        // Вибираємо всі <link> без CSS, src, srcset, poster
-        Elements elements = document.select("*[src]:not(script, iframe), " +
-                "*[data-lazy-src]:not(script, iframe), " +
-                "*[data-lazy-srcset], " +
-                "*[srcset], " +
-                "*[poster]");
-
-        Elements links = document.select("link[href], meta[content]");
-        final List<String> attrs = Arrays.asList("href", "content");
-
-        for (Element link : links) {
-            for (String attr : attrs) {
-                addAllowedFile(elements, link, attr);
-            }
-        }
-
-        return elements;
-    }
-
-    public static Elements ScrapInlineStylesheets(Document document) {
-        // Вибираємо всі inline styles
-        return document.select("*[style]");
-    }
-
-    public static Elements ScrapBlockStylesheets(Document document) {
-        // Вибираємо всі <style> із SRC
-        return document.select("style");
-    }
-
-    public static Elements ScrapScripts(Document document) {
-        // Вибираємо всі <script> із SRC
-        return document.select("script[src], script[data-rocket-src]");
-    }
-
     public static String CleanName(String fileName) {
         int invalidIndex = getInvalidFileNameCharIndex(fileName);
         if (invalidIndex > 0) return fileName.substring(0, invalidIndex);
@@ -105,15 +48,6 @@ public class ScrapperWorker {
 
     private static boolean isAbsoluteUrl(String expression) {
         return expression.matches(RegexConstants.IS_ABSOLUTE_URL_REGEX);
-    }
-
-    private static void addAllowedFile(Elements elementsTo, Element check, String attr) {
-        if (!check.hasAttr(attr)) return;
-
-        String attrValue = check.absUrl(attr);
-        if (ScrapperWorkerConstants.ALLOWED_TYPES.contains(FilesWorker.GetFileType(attrValue))) {
-            elementsTo.add(check);
-        }
     }
 
     private static int getInvalidFileNameCharIndex(String fileName) {

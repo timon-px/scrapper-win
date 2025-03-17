@@ -5,10 +5,7 @@ import com.desktop.services.config.constants.RegexConstants;
 import com.desktop.services.config.enums.SaveAsEnum;
 import com.desktop.services.models.FileSaveModel;
 import com.desktop.services.processors.interfaces.IDocumentProcess;
-import com.desktop.services.utils.FilesWorker;
-import com.desktop.services.utils.PathHelper;
-import com.desktop.services.utils.RegexWorker;
-import com.desktop.services.utils.ScrapperWorker;
+import com.desktop.services.utils.*;
 import javafx.beans.property.DoubleProperty;
 import org.apache.commons.codec.binary.Base64;
 import org.jsoup.nodes.Document;
@@ -31,14 +28,9 @@ public class HtmlProcessor implements IDocumentProcess {
     }
 
     @Override
-    public CompletableFuture<Void> ProcessAsync(Document document) {
-        return ProcessAsync(document, null);
-    }
-
-    @Override
     public CompletableFuture<Void> ProcessAsync(Document document, DoubleProperty progress) {
-        Elements externalFiles = ScrapperWorker.ScrapAllExternalFiles(document);
-        Elements scriptFiles = ScrapperWorker.ScrapScripts(document);
+        Elements externalFiles = DocumentWorker.ScrapAllExternalFiles(document);
+        Elements scriptFiles = DocumentWorker.ScrapScripts(document);
 
         String documentUrl = ScrapperWorker.ResolveDocumentUrl(document);
 
@@ -50,7 +42,8 @@ public class HtmlProcessor implements IDocumentProcess {
         }));
         futures.addAll(processElementsAsync(scriptFiles, this::processScriptAttr));
 
-        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+                .thenRun(() -> DocumentWorker.UpdateProgress(progress, 0.05));
     }
 
     private List<CompletableFuture<Void>> processElementsAsync(Elements elements, Consumer<Element> processor) {

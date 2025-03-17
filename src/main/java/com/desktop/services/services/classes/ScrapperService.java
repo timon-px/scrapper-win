@@ -12,6 +12,7 @@ import com.desktop.services.processors.scrapper.StylesheetProcessor;
 import com.desktop.services.services.interfaces.IScrapperService;
 import com.desktop.services.storage.IStorageWorker;
 import com.desktop.services.storage.StorageWorker;
+import com.desktop.services.utils.DocumentWorker;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import org.jsoup.Connection;
@@ -44,7 +45,7 @@ public class ScrapperService implements IScrapperService {
             try {
                 Connection.Response response = Jsoup.connect(scrapperRequest.getUrl()).execute();
                 Document document = response.parse();
-                progress.set(progress.get() + 0.05);
+                DocumentWorker.UpdateProgress(progress, 0.05);
 
                 String fileHost = new URI(document.location()).getHost();
                 Path path = storageWorker.GetFolderPath(fileHost);
@@ -72,10 +73,8 @@ public class ScrapperService implements IScrapperService {
 
         IFilesProcess filesProcessor = new FilesProcess(storageWorker, path);
 
-        return stylesheetProcessor.ProcessAsync(document)
-                .thenRun(() -> progress.set(progress.get() + 0.05))
-                .thenCompose(unused -> htmlProcessor.ProcessAsync(document))
-                .thenRun(() -> progress.set(progress.get() + 0.05))
+        return stylesheetProcessor.ProcessAsync(document, progress)
+                .thenCompose(unused -> htmlProcessor.ProcessAsync(document, progress))
                 .thenCompose(unused -> filesProcessor.SaveAsync(filesToSaveList, progress));
     }
 

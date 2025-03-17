@@ -4,10 +4,9 @@ import com.desktop.services.config.constants.RegexConstants;
 import com.desktop.services.config.constants.UniqueizerConstants;
 import com.desktop.services.processors.interfaces.IDocumentProcess;
 import com.desktop.services.utils.CharSwapper;
-import com.desktop.services.utils.ScrapperWorker;
+import com.desktop.services.utils.DocumentWorker;
 import com.desktop.services.utils.StylesheetWorker;
 import com.desktop.services.utils.UniqueizerWorker;
-import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -31,11 +30,6 @@ public class UniqueizerProcessor implements IDocumentProcess {
     }
 
     @Override
-    public CompletableFuture<Void> ProcessAsync(Document document) {
-        return ProcessAsync(document, null);
-    }
-
-    @Override
     public CompletableFuture<Void> ProcessAsync(Document document, DoubleProperty progress) {
         List<CompletableFuture<Void>> futures = new ArrayList<>();
 
@@ -54,16 +48,16 @@ public class UniqueizerProcessor implements IDocumentProcess {
         // Changing colors
         futures.add(processInlineStylesheetColors(document));
 
-        double increment = 1.0 / (futures.size() + 2); // +2 for divs and script
+        double increment = DocumentWorker.GetProgressIncrement(1.0, futures.size() + 2); // +2 for divs and script
         for (CompletableFuture<Void> future : futures) {
-            future.thenRun(() -> updateProgress(progress, increment));
+            future.thenRun(() -> DocumentWorker.UpdateProgress(progress, increment));
         }
 
         // Adding divs and script at the end
         CompletableFuture<Void> finalFuture = processEmptyDivs(document)
-                .thenRun(() -> updateProgress(progress, increment))
+                .thenRun(() -> DocumentWorker.UpdateProgress(progress, increment))
                 .thenCompose(unused -> processEmptyScript(document))
-                .thenRun(() -> updateProgress(progress, increment));
+                .thenRun(() -> DocumentWorker.UpdateProgress(progress, increment));
 
         return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
                 .thenCompose(unused -> finalFuture)
@@ -80,12 +74,12 @@ public class UniqueizerProcessor implements IDocumentProcess {
     }
 
     private CompletableFuture<Void> processMetaTags(Document document) {
-        Elements metaTags = UniqueizerWorker.ScrapProcessedMeta(document);
+        Elements metaTags = DocumentWorker.ScrapProcessedMeta(document);
         return processElementsAsync(metaTags, element -> replaceRandomAttribute(element, "content"));
     }
 
     private CompletableFuture<Void> processDataTags(Document document) {
-        Elements tags = UniqueizerWorker.ScrapProcessedTags(document);
+        Elements tags = DocumentWorker.ScrapProcessedTags(document);
         return processElementsAsync(tags, element -> {
             if (element.firstChild() instanceof TextNode && !element.tagName().equals("title")) return;
 
@@ -98,8 +92,8 @@ public class UniqueizerProcessor implements IDocumentProcess {
 
     private CompletableFuture<Void> processConnectedFiles(Document document) {
         List<CompletableFuture<Void>> futures = new ArrayList<>();
-        Elements stylesheets = ScrapperWorker.ScrapStylesheets(document);
-        Elements scripts = ScrapperWorker.ScrapScripts(document);
+        Elements stylesheets = DocumentWorker.ScrapStylesheets(document);
+        Elements scripts = DocumentWorker.ScrapScripts(document);
 
         for (Element stylesheet : stylesheets)
             futures.add(processConnectedFile(stylesheet, "href"));
@@ -124,7 +118,7 @@ public class UniqueizerProcessor implements IDocumentProcess {
     }
 
     private CompletableFuture<Void> processImgTags(Document document) {
-        Elements imgTags = UniqueizerWorker.ScrapImgTags(document);
+        Elements imgTags = DocumentWorker.ScrapImgTags(document);
         return processElementsAsync(imgTags, element -> setRandomAttribute(element, "alt"));
     }
 
@@ -159,7 +153,7 @@ public class UniqueizerProcessor implements IDocumentProcess {
     }
 
     private CompletableFuture<Void> processClasses(Document document) {
-        Elements elements = UniqueizerWorker.ScrapTagsWithClasses(document);
+        Elements elements = DocumentWorker.ScrapTagsWithClasses(document);
         return processElementsAsync(elements, this::processClass);
     }
 
@@ -183,7 +177,7 @@ public class UniqueizerProcessor implements IDocumentProcess {
     }
 
     private CompletableFuture<Void> processInlineStylesheetColors(Document document) {
-        Elements stylesheets = ScrapperWorker.ScrapInlineStylesheets(document);
+        Elements stylesheets = DocumentWorker.ScrapInlineStylesheets(document);
         return processElementsAsync(stylesheets, this::processInlineStylesheetColorElement);
     }
 
@@ -222,7 +216,4 @@ public class UniqueizerProcessor implements IDocumentProcess {
         }
     }
 
-    private void updateProgress(DoubleProperty progress, double addValue) {
-        Platform.runLater(() -> progress.set(Math.min(addValue, 1.0)));
-    }
 }

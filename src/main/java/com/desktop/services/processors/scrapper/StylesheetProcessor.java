@@ -5,10 +5,7 @@ import com.desktop.services.config.enums.SaveAsEnum;
 import com.desktop.services.models.FileSaveModel;
 import com.desktop.services.processors.interfaces.IDocumentProcess;
 import com.desktop.services.storage.IStorageWorker;
-import com.desktop.services.utils.FilesWorker;
-import com.desktop.services.utils.PathHelper;
-import com.desktop.services.utils.ScrapperWorker;
-import com.desktop.services.utils.StylesheetWorker;
+import com.desktop.services.utils.*;
 import javafx.beans.property.DoubleProperty;
 import org.apache.commons.io.FilenameUtils;
 import org.jsoup.Connection;
@@ -41,24 +38,20 @@ public class StylesheetProcessor implements IDocumentProcess {
     }
 
     @Override
-    public CompletableFuture<Void> ProcessAsync(Document document) {
-        return ProcessAsync(document, null);
-    }
-
-    @Override
     public CompletableFuture<Void> ProcessAsync(Document document, DoubleProperty progress) {
         String documentUrl = ScrapperWorker.ResolveDocumentUrl(document);
 
-        Elements styles = ScrapperWorker.ScrapStylesheets(document);
-        Elements blockStyles = ScrapperWorker.ScrapBlockStylesheets(document);
-        Elements inlineStyles = ScrapperWorker.ScrapInlineStylesheets(document);
+        Elements styles = DocumentWorker.ScrapStylesheets(document);
+        Elements blockStyles = DocumentWorker.ScrapBlockStylesheets(document);
+        Elements inlineStyles = DocumentWorker.ScrapInlineStylesheets(document);
 
         List<CompletableFuture<Void>> futures = new ArrayList<>();
         futures.add(processBlockStylesAsync(blockStyles, documentUrl));
         futures.add(processInlineStylesAsync(inlineStyles, documentUrl));
         futures.add(processExternalStylesAsync(styles));
 
-        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+                .thenRun(() -> DocumentWorker.UpdateProgress(progress, 0.05));
     }
 
     private CompletableFuture<Void> processBlockStylesAsync(Elements styles, String documentUrl) {
@@ -113,7 +106,6 @@ public class StylesheetProcessor implements IDocumentProcess {
             System.out.println("PROCESS CSS FILE ERROR " + e.getMessage());
             return null;
         }
-
     }
 
     private String processCssDependencies(String cssContent, String baseUrl, boolean isInline) {
