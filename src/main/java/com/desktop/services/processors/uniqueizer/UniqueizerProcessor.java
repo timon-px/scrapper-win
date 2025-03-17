@@ -215,5 +215,4 @@ public class UniqueizerProcessor implements IDocumentProcess {
             tag.attr(attr, RANDOM_STRING);
         }
     }
-
 }

@@ -11,6 +11,8 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.input.TransferMode;
+import javafx.scene.layout.VBox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,6 +27,9 @@ public class UniqueizerController {
     private static final Logger log = LoggerFactory.getLogger(UniqueizerController.class);
     private static final IControllerWorker controllerWorker = new ControllerWorker();
     private static List<Node> disableNodes;
+
+    @FXML
+    private VBox v_box;
 
     @FXML
     private Button browse_file_btn;
@@ -57,6 +62,23 @@ public class UniqueizerController {
 
         browseFileBtnInit(browse_file_btn, file_path_tf, save_path_tf);
         browseDirectoryBtnInit(browse_save_btn, save_path_tf);
+
+        dragNDropInit(v_box);
+    }
+
+    private void dragNDropInit(VBox vbox) {
+        vbox.setOnDragOver(evt -> {
+            if (evt.getDragboard().hasFiles() && evt.getDragboard().getFiles().size() == 1) {
+                evt.acceptTransferModes(TransferMode.LINK);
+            }
+        });
+        vbox.setOnDragDropped(evt -> {
+            File file = evt.getDragboard().getFiles().getFirst();
+            String validation = UniqueizerValidation.validateFilePathField(file.getAbsolutePath());
+            controllerWorker.SetErrorLabel(file_path_error_lbl, validation);
+
+            chooseFile(file_path_tf, save_path_tf, file);
+        });
     }
 
     private void submitBtnInit(Button button) {

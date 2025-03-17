@@ -6,7 +6,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<VBox alignment="TOP_CENTER" prefHeight="486.0" prefWidth="720.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.desktop.application.controller.UniqueizerController">
+<VBox fx:id="v_box" alignment="TOP_CENTER" prefHeight="486.0" prefWidth="720.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.desktop.application.controller.UniqueizerController">
     <BorderPane layoutX="230.0" layoutY="26.0" VBox.vgrow="ALWAYS">
         <top>
             <Label alignment="TOP_CENTER" text="scrapper" textAlignment="CENTER" textOverrun="CLIP" BorderPane.alignment="CENTER">
