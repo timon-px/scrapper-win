@@ -68,10 +68,12 @@ public class UniqueizerController {
     }
 
     private void browseFileBtnInit(Button button, TextField textField, TextField relativeTextField) {
-        controllerWorker.InitFileBrowseBtn(button, file -> {
-            textField.setText(file.getAbsolutePath());
-            relativeTextField.setText(file.getParentFile().getAbsolutePath());
-        });
+        controllerWorker.InitFileBrowseBtn(button, file -> chooseFile(textField, relativeTextField, file));
+    }
+
+    private static void chooseFile(TextField textField, TextField relativeTextField, File file) {
+        textField.setText(file.getAbsolutePath());
+        relativeTextField.setText(file.getParentFile().getAbsolutePath());
     }
 
     private void browseDirectoryBtnInit(Button button, TextField textField) {
@@ -90,7 +92,6 @@ public class UniqueizerController {
 
         IUniqueizerService uniqueizerService = new UniqueizerService();
         initSubmitAction(uniqueizerService);
-
 
         CompletableFuture<UniqueizerResponseDTO> future = uniqueizerService.UniqueizeWeb(new UniqueizerRequestDTO(file, saveDir));
         future.thenAccept(response -> Platform.runLater(() -> {

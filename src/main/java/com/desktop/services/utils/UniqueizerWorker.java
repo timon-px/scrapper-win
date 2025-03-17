@@ -7,6 +7,8 @@ import org.jsoup.select.Elements;
 import java.security.SecureRandom;
 
 public class UniqueizerWorker {
+    private static final SecureRandom random = new SecureRandom();
+    
     public static Elements ScrapProcessedMeta(Document document) {
         // Вибираємо всі <meta> із og:
         return document.select(getProcessMetaSelector());
@@ -28,7 +30,6 @@ public class UniqueizerWorker {
     }
 
     public static String GetRandomIntegerString(int length) {
-        SecureRandom random = new SecureRandom();
         StringBuilder randomString = new StringBuilder();
         for (int i = 0; i < length; i++) {
             int number = random.nextInt(10);
@@ -38,7 +39,6 @@ public class UniqueizerWorker {
     }
 
     public static String GetRandomCharString(int length) {
-        SecureRandom random = new SecureRandom();
         StringBuilder randomString = new StringBuilder();
         int randomBound = UniqueizerConstants.ALLOWED_TO_RANDOM_STRING.length();
         for (int i = 0; i < length; i++) {
@@ -54,7 +54,6 @@ public class UniqueizerWorker {
     }
 
     public static String GetRandomPrefix() {
-        SecureRandom random = new SecureRandom();
         int randomId = random.nextInt(UniqueizerConstants.PREFIXES.size());
 
         return UniqueizerConstants.PREFIXES.get(randomId);
