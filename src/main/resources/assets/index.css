@@ -14,3 +14,7 @@
 #replace_to_offer_cbx {
     -fx-cursor: hand;
 }
+
+.tab-pane > .tab-header-area > .headers-region > .tab:hover {
+    -fx-cursor: hand;
+}
