@@ -34,7 +34,7 @@ public class UniqueizerService implements IUniqueizerService {
                 File file = uniqueizerRequest.getFile();
                 Document document = Jsoup.parse(file);
 
-                return startProcesses(document)
+                return startProcesses(document, uniqueizerRequest.isReplaceSelected())
                         .thenCompose(unused -> storageWorker.SaveContentAsync(document.outerHtml(), UniqueizerConstants.UNIQUE_HTML_NAME))
                         .thenApply(finalPath -> {
                             Path responsePath = finalPath.getParent().toAbsolutePath();
@@ -47,8 +47,8 @@ public class UniqueizerService implements IUniqueizerService {
         });
     }
 
-    private CompletableFuture<Void> startProcesses(Document document) {
-        IDocumentProcess uniqueizerProcessor = new UniqueizerProcessor();
+    private CompletableFuture<Void> startProcesses(Document document, boolean isSetOffer) {
+        IDocumentProcess uniqueizerProcessor = new UniqueizerProcessor(isSetOffer);
         return uniqueizerProcessor.ProcessAsync(document, progress);
     }
 }

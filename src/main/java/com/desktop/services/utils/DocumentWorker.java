@@ -61,24 +61,17 @@ public class DocumentWorker {
         return document.select(HtmlConstants.EXTERNAL_SCRIPTS_QUERY);
     }
 
-    public static Elements ScrapProcessedMeta(Document document) {
-        // Вибираємо всі <meta> із og:
-        return document.select(HtmlConstants.UNIQUEIZER_META_TAGS_QUERY);
+    public static void SetAttribute(Element element, String attr, String value) {
+        element.attr(attr, value);
     }
 
-    public static Elements ScrapProcessedTags(Document document) {
-        // Вибираємо всі not excluded tags
-        return document.children().select(HtmlConstants.UNIQUEIZER_ALL_TAGS_QUERY);
+    public static void ReplaceAttribute(Element element, String attr, String value) {
+        if (element.hasAttr(attr)) SetAttribute(element, attr, value);
     }
 
-    public static Elements ScrapImgTags(Document document) {
-        // Вибираємо всі images
-        return document.select(HtmlConstants.HTML_IMAGE_QUERY);
-    }
-
-    public static Elements ScrapTagsWithClasses(Document document) {
-        // Вибираємо всі tags with classes
-        return document.select(HtmlConstants.NODE_WITH_CLASS_QUERY);
+    public static void ReplaceAnchorHref(Document document, String replaceWith) {
+        Elements links = document.select(HtmlConstants.ANCHOR_WITH_HREF_QUERY);
+        links.attr("href", replaceWith);
     }
 
     public static void UpdateProgress(DoubleProperty progress, double addValue) {

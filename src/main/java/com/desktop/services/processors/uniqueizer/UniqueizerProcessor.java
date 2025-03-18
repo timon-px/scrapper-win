@@ -25,8 +25,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class UniqueizerProcessor implements IDocumentProcess {
     private static final SecureRandom random = new SecureRandom();
     private final String RANDOM_STRING;
+    private final boolean isSetOffer;
 
-    public UniqueizerProcessor() {
+    public UniqueizerProcessor(boolean isSetOffer) {
+        this.isSetOffer = isSetOffer;
         RANDOM_STRING = UniqueizerWorker.GetRandomIntegerString(UniqueizerConstants.RANDOM_STRING_LENGTH);
     }
 
@@ -94,6 +96,9 @@ public class UniqueizerProcessor implements IDocumentProcess {
         // Changing colors
         if (element.is(HtmlConstants.INLINE_STYLESHEETS_QUERY))
             processInlineStylesheetColorElement(element);
+
+        if (isSetOffer && element.is(HtmlConstants.ANCHOR_WITH_HREF_QUERY))
+            DocumentWorker.SetAttribute(element, "href", "{offer}");
 
         // Adding or replacement unique classes
         if (element.hasAttr("class"))
@@ -189,13 +194,11 @@ public class UniqueizerProcessor implements IDocumentProcess {
     }
 
     private void setRandomAttribute(Element tag, String attr) {
-        tag.attr(attr, RANDOM_STRING);
+        DocumentWorker.SetAttribute(tag, attr, RANDOM_STRING);
     }
 
     private void replaceRandomAttribute(Element tag, String attr) {
-        if (tag.hasAttr(attr)) {
-            tag.attr(attr, RANDOM_STRING);
-        }
+        DocumentWorker.ReplaceAttribute(tag, attr, RANDOM_STRING);
     }
 
     private void incrementTraversedProgress(AtomicInteger processedNodes, int totalNodes, DoubleProperty progress) {

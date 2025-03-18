@@ -13,6 +13,7 @@ public class HtmlConstants {
     public static final String EXTERNAL_SCRIPTS_QUERY = "script[src], script[data-rocket-src]";
     public static final String HTML_IMAGE_QUERY = "img";
     public static final String NODE_WITH_CLASS_QUERY = "*[class]";
+    public static final String ANCHOR_WITH_HREF_QUERY = "a[href]";
     public static final String EXTERNAL_FILES_QUERY = "*[src]:not(script, iframe), " +
             "*[data-lazy-src]:not(script, iframe), " +
             "*[data-lazy-srcset], " +

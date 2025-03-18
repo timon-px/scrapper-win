@@ -50,10 +50,12 @@ public class UniqueizerController {
 
     @FXML
     private ProgressBar progress_bar;
+    @FXML
+    private CheckBox replace_to_offer_cbx;
 
     @FXML
     private void initialize() {
-        disableNodes = List.of(browse_file_btn, browse_save_btn, submit_btn, file_path_tf, save_path_tf);
+        disableNodes = List.of(browse_file_btn, browse_save_btn, submit_btn, file_path_tf, save_path_tf, replace_to_offer_cbx);
 
         progressBarInit(progress_bar);
         submitBtnInit(submit_btn);
@@ -103,6 +105,7 @@ public class UniqueizerController {
     private void handleSubmit() {
         String filePath = file_path_tf.getText().trim();
         String savePath = save_path_tf.getText().trim();
+        boolean isReplaceSelected = replace_to_offer_cbx.isSelected();
 
         if (!validateFields(filePath, savePath)) return;
 
@@ -113,7 +116,7 @@ public class UniqueizerController {
         IUniqueizerService uniqueizerService = new UniqueizerService();
         initSubmitAction(uniqueizerService);
 
-        CompletableFuture<UniqueizerResponseDTO> future = uniqueizerService.UniqueizeWeb(new UniqueizerRequestDTO(file, saveDir));
+        CompletableFuture<UniqueizerResponseDTO> future = uniqueizerService.UniqueizeWeb(new UniqueizerRequestDTO(file, saveDir, isReplaceSelected));
         future.thenAccept(response -> Platform.runLater(() -> {
             String responseMessage = response.getMessage();
             successSubmitAction(responseMessage);
