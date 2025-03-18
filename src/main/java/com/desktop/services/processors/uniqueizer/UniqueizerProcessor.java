@@ -15,7 +15,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.nodes.TextNode;
 
 import java.security.SecureRandom;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -34,17 +33,10 @@ public class UniqueizerProcessor implements IDocumentProcess {
 
     @Override
     public CompletableFuture<Void> ProcessAsync(Document document, DoubleProperty progress) {
-        List<CompletableFuture<Void>> futures = new ArrayList<>();
-
-        // Working with nodes
-        futures.add(processNodesAsync(document, progress));
-
         // Adding divs and script at the end
-        CompletableFuture<Void> finalFuture = processEmptyDivs(document)
-                .thenCompose(unused -> processEmptyScript(document));
-
-        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
-                .thenCompose(unused -> finalFuture)
+        return processNodesAsync(document, progress)
+                .thenCompose(unused -> processEmptyDivs(document))
+                .thenCompose(unused -> processEmptyScript(document))
                 .thenRun(() -> progress.set(1));
     }
 
@@ -187,7 +179,7 @@ public class UniqueizerProcessor implements IDocumentProcess {
             String randomString = UniqueizerWorker.GetRandomIntegerString(UniqueizerConstants.RANDOM_STRING_LENGTH);
 
             Element div = document.createElement("script");
-            div.text("console.log('msg: " + randomString + "');");
+            div.appendText("console.log('msg: " + randomString + "');");
 
             document.body().appendChild(div);
         });
