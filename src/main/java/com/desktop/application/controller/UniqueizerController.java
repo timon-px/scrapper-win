@@ -43,12 +43,10 @@ public class UniqueizerController {
     @FXML
     private Label save_path_error_lbl;
 
-
     @FXML
     private TextField file_path_tf;
     @FXML
     private TextField save_path_tf;
-
 
     @FXML
     private ProgressBar progress_bar;

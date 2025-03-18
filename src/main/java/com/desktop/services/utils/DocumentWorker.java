@@ -1,7 +1,7 @@
 package com.desktop.services.utils;
 
+import com.desktop.services.config.constants.HtmlConstants;
 import com.desktop.services.config.constants.ScrapperWorkerConstants;
-import com.desktop.services.config.constants.UniqueizerConstants;
 import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
 import org.apache.commons.io.FilenameUtils;
@@ -15,7 +15,7 @@ import java.util.List;
 public class DocumentWorker {
     public static Elements ScrapStylesheets(Document document) {
         // Вибираємо всі <link> із CSS
-        Elements cssLinks = document.select("link[rel*='stylesheet'][href]");
+        Elements cssLinks = document.select(HtmlConstants.LINK_STYLESHEETS_QUERY);
         Elements cssElements = new Elements();
 
         for (Element cssLink : cssLinks) {
@@ -32,11 +32,7 @@ public class DocumentWorker {
 
     public static Elements ScrapAllExternalFiles(Document document) {
         // Вибираємо всі <link> без CSS, src, srcset, poster
-        Elements elements = document.select("*[src]:not(script, iframe), " +
-                "*[data-lazy-src]:not(script, iframe), " +
-                "*[data-lazy-srcset], " +
-                "*[srcset], " +
-                "*[poster]");
+        Elements elements = document.select(HtmlConstants.EXTERNAL_FILES_QUERY);
 
         Elements links = document.select("link[href], meta[content]");
         final List<String> attrs = Arrays.asList("href", "content");
@@ -52,37 +48,37 @@ public class DocumentWorker {
 
     public static Elements ScrapInlineStylesheets(Document document) {
         // Вибираємо всі inline styles
-        return document.select("*[style]");
+        return document.select(HtmlConstants.INLINE_STYLESHEETS_QUERY);
     }
 
     public static Elements ScrapBlockStylesheets(Document document) {
         // Вибираємо всі <style> із SRC
-        return document.select("style");
+        return document.select(HtmlConstants.BLOCK_STYLESHEETS_QUERY);
     }
 
     public static Elements ScrapScripts(Document document) {
         // Вибираємо всі <script> із SRC
-        return document.select("script[src], script[data-rocket-src]");
+        return document.select(HtmlConstants.EXTERNAL_SCRIPTS_QUERY);
     }
 
     public static Elements ScrapProcessedMeta(Document document) {
         // Вибираємо всі <meta> із og:
-        return document.select(getProcessMetaSelector());
+        return document.select(HtmlConstants.UNIQUEIZER_META_TAGS_QUERY);
     }
 
     public static Elements ScrapProcessedTags(Document document) {
         // Вибираємо всі not excluded tags
-        return document.children().select(getProcessTagsSelector());
+        return document.children().select(HtmlConstants.UNIQUEIZER_ALL_TAGS_QUERY);
     }
 
     public static Elements ScrapImgTags(Document document) {
         // Вибираємо всі images
-        return document.select("img");
+        return document.select(HtmlConstants.HTML_IMAGE_QUERY);
     }
 
     public static Elements ScrapTagsWithClasses(Document document) {
         // Вибираємо всі tags with classes
-        return document.select("*[class]");
+        return document.select(HtmlConstants.NODE_WITH_CLASS_QUERY);
     }
 
     public static void UpdateProgress(DoubleProperty progress, double addValue) {
@@ -104,23 +100,5 @@ public class DocumentWorker {
         if (ScrapperWorkerConstants.ALLOWED_TYPES.contains(FilesWorker.GetFileType(attrValue))) {
             elementsTo.add(check);
         }
-    }
-
-    private static String getProcessMetaSelector() {
-        int id = 0;
-        int length = UniqueizerConstants.OG_PROPERTIES.size();
-        StringBuilder builder = new StringBuilder();
-        for (String prop : UniqueizerConstants.OG_PROPERTIES) {
-            builder.append("meta").append("[").append("property=").append(prop).append("]");
-
-            if (++id < length) builder.append(", ");
-        }
-
-        return builder.toString();
-    }
-
-    private static String getProcessTagsSelector() {
-        String excludedTags = String.join(", ", UniqueizerConstants.EXCLUDED_TAGS);
-        return "*" + ":not(" + excludedTags + ")";
     }
 }
