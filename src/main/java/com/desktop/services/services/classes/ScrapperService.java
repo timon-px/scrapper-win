@@ -18,7 +18,6 @@ import javafx.beans.property.SimpleDoubleProperty;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.net.URI;
@@ -53,7 +52,9 @@ public class ScrapperService implements IScrapperService {
                 return startProcesses(document, path, filesToSaveList, storageWorker)
                         .thenCompose(unused -> {
                             document.select("base").remove();
+
                             replaceHrefToOffer(document, scrapperRequest.isReplaceSelected());
+
                             return storageWorker.SaveContentAsync(document.outerHtml(), path, ScrapperConstants.HTML_NAME);
                         })
                         .thenApply(finalPath -> {
@@ -78,9 +79,7 @@ public class ScrapperService implements IScrapperService {
                 .thenCompose(unused -> filesProcessor.SaveAsync(filesToSaveList, progress));
     }
 
-    private void replaceHrefToOffer(Document document, boolean isNeeded) {
-        if (!isNeeded) return;
-        Elements links = document.select("a[href]");
-        links.attr("href", "{offer}");
+    private void replaceHrefToOffer(Document document, boolean isSetOffer) {
+        if (isSetOffer) DocumentWorker.ReplaceAnchorHref(document, "{offer}");
     }
 }

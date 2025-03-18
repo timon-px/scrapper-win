@@ -58,13 +58,13 @@ public class HtmlProcessor implements IDocumentProcess {
     }
 
     private void processSimpleAttr(Element element) {
-        for (String attr : HtmlConstants.getSimpleSaveAttr()) { // Move to constants class
+        for (String attr : HtmlConstants.SIMPLE_SAVE_ATTR) { // Move to constants class
             processAttribute(element, attr);
         }
     }
 
     private void processComplexAttr(Element element, String documentUrl) {
-        for (String attr : HtmlConstants.getComplexSaveAttr()) {
+        for (String attr : HtmlConstants.COMPLEX_SAVE_ATTR) {
             if (!element.hasAttr(attr)) continue;
 
             String attrValue = element.attr(attr);

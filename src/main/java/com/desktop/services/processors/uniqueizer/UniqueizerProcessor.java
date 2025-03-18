@@ -1,5 +1,6 @@
 package com.desktop.services.processors.uniqueizer;
 
+import com.desktop.services.config.constants.HtmlConstants;
 import com.desktop.services.config.constants.RegexConstants;
 import com.desktop.services.config.constants.UniqueizerConstants;
 import com.desktop.services.processors.interfaces.IDocumentProcess;
@@ -8,118 +9,150 @@ import com.desktop.services.utils.DocumentWorker;
 import com.desktop.services.utils.StylesheetWorker;
 import com.desktop.services.utils.UniqueizerWorker;
 import javafx.beans.property.DoubleProperty;
+import org.apache.commons.io.FilenameUtils;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.TextNode;
-import org.jsoup.select.Elements;
 
 import java.security.SecureRandom;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class UniqueizerProcessor implements IDocumentProcess {
     private static final SecureRandom random = new SecureRandom();
     private final String RANDOM_STRING;
+    private final boolean isSetOffer;
 
-    public UniqueizerProcessor() {
+    public UniqueizerProcessor(boolean isSetOffer) {
+        this.isSetOffer = isSetOffer;
         RANDOM_STRING = UniqueizerWorker.GetRandomIntegerString(UniqueizerConstants.RANDOM_STRING_LENGTH);
     }
 
     @Override
     public CompletableFuture<Void> ProcessAsync(Document document, DoubleProperty progress) {
-        List<CompletableFuture<Void>> futures = new ArrayList<>();
-
-        // Text replacement
-        futures.add(processSwapCharsAsync(document));
-        // Adding or replacement meta tags
-        futures.add(processMetaTags(document));
-        // Adding random data tag
-        futures.add(processDataTags(document));
-        // Adding version (?v=) for connected files
-        futures.add(processConnectedFiles(document));
-        // Replacing img alt
-        futures.add(processImgTags(document));
-        // Adding or replacement unique classes
-        futures.add(processClasses(document));
-        // Changing colors
-        futures.add(processInlineStylesheetColors(document));
-
-        double increment = DocumentWorker.GetProgressIncrement(1.0, futures.size() + 2); // +2 for divs and script
-        for (CompletableFuture<Void> future : futures) {
-            future.thenRun(() -> DocumentWorker.UpdateProgress(progress, increment));
-        }
-
         // Adding divs and script at the end
-        CompletableFuture<Void> finalFuture = processEmptyDivs(document)
-                .thenRun(() -> DocumentWorker.UpdateProgress(progress, increment))
+        return processNodesAsync(document, progress)
+                .thenCompose(unused -> processEmptyDivs(document))
                 .thenCompose(unused -> processEmptyScript(document))
-                .thenRun(() -> DocumentWorker.UpdateProgress(progress, increment));
-
-        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
-                .thenCompose(unused -> finalFuture)
                 .thenRun(() -> progress.set(1));
     }
 
-    private CompletableFuture<Void> processSwapCharsAsync(Document document) {
-        return CompletableFuture.runAsync(() -> document.traverse((node, depth) -> {
-            if (node instanceof TextNode textNode) {
-                String transformedText = CharSwapper.ConvertChars(textNode.getWholeText());
-                textNode.text(transformedText);
-            }
-        }));
+    private CompletableFuture<Void> processNodesAsync(Document document, DoubleProperty progress) {
+        AtomicInteger processedNodes = new AtomicInteger(0);
+
+        return getNodesAmount(document).thenAccept(totalNodes ->
+                document.traverse((node, depth) -> {
+                    // (if) Text replacement
+                    if (node instanceof TextNode textNode) {
+                        String transformedText = CharSwapper.ConvertChars(textNode.getWholeText());
+                        textNode.text(transformedText);
+                    } else if (node instanceof Element element) processNodeElement(element);
+
+                    // Update progress after processing each node
+                    incrementTraversedProgress(processedNodes, totalNodes, progress);
+                }));
     }
 
-    private CompletableFuture<Void> processMetaTags(Document document) {
-        Elements metaTags = DocumentWorker.ScrapProcessedMeta(document);
-        return processElementsAsync(metaTags, element -> replaceRandomAttribute(element, "content"));
-    }
-
-    private CompletableFuture<Void> processDataTags(Document document) {
-        Elements tags = DocumentWorker.ScrapProcessedTags(document);
-        return processElementsAsync(tags, element -> {
-            if (element.firstChild() instanceof TextNode && !element.tagName().equals("title")) return;
-
-            int randomId = random.nextInt(UniqueizerConstants.DATA_ATTRS.size());
-            String randomDataAttr = UniqueizerConstants.DATA_ATTRS.get(randomId);
-
-            setRandomAttribute(element, randomDataAttr);
+    private CompletableFuture<Integer> getNodesAmount(Document document) {
+        return CompletableFuture.supplyAsync(() -> {
+            AtomicInteger totalNodesAtomic = new AtomicInteger(0);
+            document.traverse((node, i) -> totalNodesAtomic.incrementAndGet());
+            return totalNodesAtomic.get();
         });
     }
 
-    private CompletableFuture<Void> processConnectedFiles(Document document) {
-        List<CompletableFuture<Void>> futures = new ArrayList<>();
-        Elements stylesheets = DocumentWorker.ScrapStylesheets(document);
-        Elements scripts = DocumentWorker.ScrapScripts(document);
+    private void processNodeElement(Element element) {
+        // Adding or replacement meta tags
+        if (element.is(HtmlConstants.UNIQUEIZER_META_TAGS_QUERY))
+            replaceRandomAttribute(element, "content");
 
-        for (Element stylesheet : stylesheets)
-            futures.add(processConnectedFile(stylesheet, "href"));
+        // Adding or replacement data tags
+        if (element.is(HtmlConstants.UNIQUEIZER_ALL_TAGS_QUERY))
+            processDataTag(element);
 
-        for (Element script : scripts)
-            futures.add(processConnectedFile(script, "src"));
+        // Replacing img alt
+        if (element.is(HtmlConstants.HTML_IMAGE_QUERY))
+            setRandomAttribute(element, "alt");
 
-        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+        // Adding version (?v=) for stylesheet
+        if (element.is(HtmlConstants.LINK_STYLESHEETS_QUERY))
+            processConnectedStylesheetFile(element);
+
+        // Adding version (?v=) for script
+        if (element.is(HtmlConstants.EXTERNAL_SCRIPTS_QUERY))
+            processConnectedFile(element, "src");
+
+        // Changing colors
+        if (element.is(HtmlConstants.INLINE_STYLESHEETS_QUERY))
+            processInlineStylesheetColorElement(element);
+
+        if (isSetOffer && element.is(HtmlConstants.ANCHOR_WITH_HREF_QUERY))
+            DocumentWorker.SetAttribute(element, "href", "{offer}");
+
+        // Adding or replacement unique classes
+        if (element.hasAttr("class"))
+            processClass(element);
     }
 
-    private CompletableFuture<Void> processConnectedFile(Element stylesheet, String attr) {
-        return CompletableFuture.runAsync(() -> {
-            if (stylesheet.hasAttr(attr)) {
-                String link = stylesheet.attr(attr);
+    private void processDataTag(Element element) {
+        if (element.firstChild() instanceof TextNode) return;
+        int randomId = random.nextInt(UniqueizerConstants.DATA_ATTRS.size());
+        String randomDataAttr = UniqueizerConstants.DATA_ATTRS.get(randomId);
 
-                int versionIndex = link.indexOf("?v=");
-                if (versionIndex > 0) link = link.substring(0, versionIndex);
-
-                stylesheet.attr(attr, link + "?v=" + RANDOM_STRING);
-            }
-        });
+        setRandomAttribute(element, randomDataAttr);
     }
 
-    private CompletableFuture<Void> processImgTags(Document document) {
-        Elements imgTags = DocumentWorker.ScrapImgTags(document);
-        return processElementsAsync(imgTags, element -> setRandomAttribute(element, "alt"));
+    private void processConnectedStylesheetFile(Element element) {
+        String href = element.attr("href");
+        if (!FilenameUtils.getName(href).contains(".css")) return;
+
+        processConnectedFile(element, "href");
+    }
+
+    private void processConnectedFile(Element element, String attr) {
+        if (element.hasAttr(attr)) {
+            String link = element.attr(attr);
+
+            int versionIndex = link.indexOf("?v=");
+            if (versionIndex > 0) link = link.substring(0, versionIndex);
+
+            element.attr(attr, link + "?v=" + RANDOM_STRING);
+        }
+    }
+
+    private void processClass(Element element) {
+        cleanUniqueizerClass(element);
+
+        String randomString = UniqueizerWorker.GetRandomCharStringWithPrefix(12);
+        element.addClass(randomString);
+    }
+
+    private void cleanUniqueizerClass(Element element) {
+        Set<String> classList = element.classNames();
+
+        for (String className : classList) {
+            if (className.matches(RegexConstants.DATA_REPEAT_CHECK_REGEX))
+                element.removeClass(className);
+        }
+    }
+
+    private void processInlineStylesheetColorElement(Element element) {
+        if (!element.hasAttr("style")) return;
+
+        String inlineStyle = element.attr("style");
+        Map<String, List<String>> stylesMap;
+
+        try {
+            stylesMap = StylesheetWorker.GetStylesMap(inlineStyle);
+        } catch (Exception e) {
+            return;
+        }
+
+        Map<String, List<String>> uniqueStyles = StylesheetWorker.ProcessUniqueStylesColors(stylesMap);
+        element.attr("style", StylesheetWorker.GetStylesString(uniqueStyles));
     }
 
     private CompletableFuture<Void> processEmptyDivs(Document document) {
@@ -146,73 +179,24 @@ public class UniqueizerProcessor implements IDocumentProcess {
             String randomString = UniqueizerWorker.GetRandomIntegerString(UniqueizerConstants.RANDOM_STRING_LENGTH);
 
             Element div = document.createElement("script");
-            div.text("console.log('msg: " + randomString + "');");
+            div.appendText("console.log('msg: " + randomString + "');");
 
             document.body().appendChild(div);
         });
     }
 
-    private CompletableFuture<Void> processClasses(Document document) {
-        Elements elements = DocumentWorker.ScrapTagsWithClasses(document);
-        return processElementsAsync(elements, this::processClass);
-    }
-
-    private void processClass(Element element) {
-        cleanUniqueizerClass(element)
-                .thenRun(() -> {
-                    String randomString = UniqueizerWorker.GetRandomCharStringWithPrefix(12);
-                    element.addClass(randomString);
-                });
-    }
-
-    private CompletableFuture<Void> cleanUniqueizerClass(Element element) {
-        return CompletableFuture.runAsync(() -> {
-            Set<String> classList = element.classNames();
-
-            for (String className : classList) {
-                if (className.matches(RegexConstants.DATA_REPEAT_CHECK_REGEX))
-                    element.removeClass(className);
-            }
-        });
-    }
-
-    private CompletableFuture<Void> processInlineStylesheetColors(Document document) {
-        Elements stylesheets = DocumentWorker.ScrapInlineStylesheets(document);
-        return processElementsAsync(stylesheets, this::processInlineStylesheetColorElement);
-    }
-
-    private void processInlineStylesheetColorElement(Element element) {
-        if (!element.hasAttr("style")) return;
-
-        String inlineStyle = element.attr("style");
-        Map<String, List<String>> stylesMap;
-
-        try {
-            stylesMap = StylesheetWorker.GetStylesMap(inlineStyle);
-        } catch (Exception e) {
-            return;
-        }
-
-        Map<String, List<String>> uniqueStyles = StylesheetWorker.ProcessUniqueStylesColors(stylesMap);
-
-        element.attr("style", StylesheetWorker.GetStylesString(uniqueStyles));
-    }
-
-    private CompletableFuture<Void> processElementsAsync(Elements elements,
-                                                         Consumer<Element> processor) {
-        List<CompletableFuture<Void>> futures = elements.stream()
-                .map(element -> CompletableFuture.runAsync(() -> processor.accept(element)))
-                .toList();
-        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
-    }
-
     private void setRandomAttribute(Element tag, String attr) {
-        tag.attr(attr, RANDOM_STRING);
+        DocumentWorker.SetAttribute(tag, attr, RANDOM_STRING);
     }
 
     private void replaceRandomAttribute(Element tag, String attr) {
-        if (tag.hasAttr(attr)) {
-            tag.attr(attr, RANDOM_STRING);
-        }
+        DocumentWorker.ReplaceAttribute(tag, attr, RANDOM_STRING);
+    }
+
+    private void incrementTraversedProgress(AtomicInteger processedNodes, int totalNodes, DoubleProperty progress) {
+        int completed = processedNodes.incrementAndGet();
+        if (completed % 100 != 0 && completed != totalNodes) return;
+        double progressValue = DocumentWorker.GetProgressIncrement(completed, totalNodes);
+        DocumentWorker.UpdateProgress(progress, progressValue);
     }
 }

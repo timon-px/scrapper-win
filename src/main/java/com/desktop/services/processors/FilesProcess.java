@@ -60,7 +60,7 @@ public class FilesProcess implements IFilesProcess {
             CompletableFuture<String> future = storageWorker.SaveFileAsync(url, fileModel, mainPath);
             future.thenRun(() -> {
                 int completed = completedFiles.incrementAndGet();
-                double fileProgress = (double) completed / totalFiles * downloadWeight;
+                double fileProgress = DocumentWorker.GetProgressIncrement(completed, totalFiles * downloadWeight);
                 DocumentWorker.UpdateProgress(progress, fileProgress + baseProgress);
             }).exceptionally(throwable -> {
                 System.err.println("Download failed: " + throwable.getMessage());
