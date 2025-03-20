@@ -1,6 +1,8 @@
 target/
 out/
+output/
 dist/
+custom-runtime/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/

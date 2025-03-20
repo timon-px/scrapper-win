@@ -18,3 +18,7 @@
 .tab-pane > .tab-header-area > .headers-region > .tab:hover {
     -fx-cursor: hand;
 }
+
+.tab-pane > .tab-header-area > .headers-region > .tab:disabled:hover {
+    -fx-cursor: default;
+}
