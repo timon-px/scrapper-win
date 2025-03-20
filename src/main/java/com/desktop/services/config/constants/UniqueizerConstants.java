@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 public class UniqueizerConstants {
-    public static final String UNIQUE_HTML_NAME = "index_unique.html";
+    public static final String UNIQUE_SUFFIX_NAME = "_unique";
     public static final int RANDOM_STRING_LENGTH = 10;
     public static final int MIN_EMPTY_DIVS = 1;
     public static final int MAX_EMPTY_DIVS = 5;
