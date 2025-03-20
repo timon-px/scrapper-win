@@ -1,24 +1,158 @@
-#menu_bar {
-    -fx-background-color: #fff;
-    -fx-border-color: transparent transparent black transparent;
+#v_box {
+    -fx-background-color: #ececec;
 }
 
-#menu_bar #menu_item {
-    -fx-cursor: hand;
-}
-
-#anchor_panel {
-    -fx-background-color: #6366f1;
+#title {
+    -fx-padding: 42 0 0 0;
+    -fx-text-fill: #23233c;
+    -fx-font-family: 'Montserrat';
+    -fx-font-size: 48;
 }
 
 #replace_to_offer_cbx {
     -fx-cursor: hand;
 }
 
-.tab-pane > .tab-header-area > .headers-region > .tab:hover {
+/* INPUT */
+.text-field {
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-background-color: #ffffff;
+    -fx-border-color: rgba(35, 35, 60, 0.5);
+}
+
+.text-field:focused {
+    -fx-border-color: rgba(35, 35, 60, 1);
+}
+
+/*LABEL */
+.label {
+    -fx-text-fill: #23233c;
+    -fx-font-family: 'Montserrat';
+    -fx-font-size: 12;
+}
+
+#file_path_error_lbl,
+#save_path_error_lbl,
+#dir_path_error_lbl,
+#web_url_error_lbl {
+    -fx-text-fill: #ca0000;
+}
+
+/* BUTTON */
+.button {
+    -fx-font-family: 'Montserrat';
+    -fx-font-weight: 600;
+    -fx-font-size: 12;
+    -fx-text-fill: #ffffff;
+    -fx-background-color: #2b2b2b;
+    -fx-border-color: #2b2b2b;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+}
+
+.button:hover {
+    -fx-background-color: #4e4e4e;
+}
+
+.button:pressed {
+    -fx-background-color: #2b2b2b;
+}
+
+#submit_btn {
+    -fx-font-size: 20;
+}
+
+/* TAB PANE */
+.tab-pane > .tab-header-area > .headers-region > .tab {
     -fx-cursor: hand;
+}
+
+.tab-pane > .tab-header-area > .headers-region > .tab:hover {
+    -fx-opacity: 0.9;
 }
 
 .tab-pane > .tab-header-area > .headers-region > .tab:disabled:hover {
     -fx-cursor: default;
+}
+
+.tab-pane:focused > .tab-header-area > .headers-region > .tab:selected .focus-indicator {
+    -fx-border-color: transparent;
+}
+
+.tab-pane > .tab-header-area > .tab-header-background {
+    -fx-border-color: transparent transparent #23233c transparent;
+    -fx-background-color: #b6b6b6;
+}
+
+.tab-pane .tab {
+    -fx-background-color: #2b2b2b;
+    -fx-background-insets: 0 1 0 0;
+    -fx-background-radius: 4 4 0 0;
+
+    -fx-border-color: #23233c;
+    -fx-border-insets: 0 1 0 0;
+    -fx-border-radius: 4 4 0 0;
+    -fx-border-width: 1 1 0 1;
+}
+
+.tab-pane .tab:selected {
+    -fx-background-color: #e6e6e6;
+}
+
+.tab-pane .tab .tab-label {
+    -fx-font-family: 'Montserrat';
+    -fx-alignment: CENTER;
+    -fx-text-fill: #acacac;
+    -fx-font-size: 12;
+    -fx-font-weight: 600;
+}
+
+.tab-pane .tab:selected .tab-label {
+    -fx-alignment: CENTER;
+    -fx-text-fill: #23233c;
+}
+
+.tab-pane:top *.tab-header-area {
+    -fx-padding: 6 6 0 2;
+}
+
+/* CHECKBOX */
+.check-box .box {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #2b2b2b;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+}
+
+.check-box .mark {
+    -fx-shape: "M1.73,12.91 8.1,19.28 22.79,4.59 22.79,1.59 8.1,16.28 1.73,9.91";
+}
+
+.check-box:selected .mark {
+    -fx-background-color: #ffffff;
+}
+
+.check-box:selected .box {
+    -fx-background-color: #2b2b2b;
+}
+
+/* PROGRESS BAR */
+.progress-bar {
+    -fx-accent: #23233c;
+    -fx-border-radius: 4;
+    -fx-border-color: #23233c;
+}
+
+.progress-bar .bar {
+    -fx-background-insets: 0;
+    -fx-background-radius: 2;
+}
+
+.progress-bar > .track {
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-text-box-border: transparent;
+    -fx-control-inner-background: transparent;
+    -fx-background-color: #ffffff;
 }

@@ -1,29 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-<VBox alignment="TOP_CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
-      prefHeight="540.0" prefWidth="720.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="com.desktop.application.controller.MainController">
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.VBox?>
+<VBox fx:id="v_box" alignment="TOP_CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="540.0" prefWidth="720.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.desktop.application.controller.MainController">
     <BorderPane VBox.vgrow="ALWAYS">
-        <top>
-            <MenuBar id="menu_bar" BorderPane.alignment="CENTER">
-                <Menu id="menu_item" mnemonicParsing="false" text="File">
-                    <MenuItem mnemonicParsing="false" text="Authorize"/>
-                </Menu>
-                <Menu id="menu_item" mnemonicParsing="false" text="Help">
-                    <MenuItem mnemonicParsing="false" text="About"/>
-                </Menu>
-                <BorderPane.margin>
-                    <Insets/>
-                </BorderPane.margin>
-            </MenuBar>
-        </top>
         <center>
             <TabPane fx:id="tab_pane" tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER">
-                <Tab fx:id="web_parser_tab" text="Web Parser"/>
-                <Tab fx:id="uniqueizer_tab" text="Uniqueizer"/>
+                <Tab fx:id="web_parser_tab" text="Web Parser" />
+                <Tab fx:id="uniqueizer_tab" text="Uniqueizer" />
             </TabPane>
         </center>
     </BorderPane>

@@ -17,6 +17,7 @@ public class ScrapperApplication extends Application {
         FXMLLoader fxmlLoader = new FXMLLoader(ScrapperApplication.class.getResource("main-view.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), 720, 540);
         setStylesheets(scene, "index.css");
+        setStylesheets(scene, "fonts.css");
 
         stage.setTitle("Scrapper");
         setFavicon(stage);
@@ -33,13 +34,12 @@ public class ScrapperApplication extends Application {
 
     public void setStylesheets(Scene scene, String stylesheet) {
         URL cssPath = this.getClass().getResource(ASSETS_DIR + stylesheet);
-        if (cssPath != null) {
+        if (cssPath != null)
             scene.getStylesheets().add(cssPath.toExternalForm());
-        }
     }
 
     public void setFavicon(Stage stage) {
-        URL faviconPath = this.getClass().getResource(ASSETS_DIR + "favicon.png");
+        URL faviconPath = this.getClass().getResource(ASSETS_DIR + "icons/favicon.png");
         if (faviconPath != null) {
             stage.getIcons().add(new Image(faviconPath.toExternalForm()));
         }
