@@ -9,9 +9,9 @@
 <VBox fx:id="v_box" alignment="TOP_CENTER" prefHeight="486.0" prefWidth="720.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.desktop.application.controller.UniqueizerController">
     <BorderPane layoutX="230.0" layoutY="26.0" VBox.vgrow="ALWAYS">
         <top>
-            <Label alignment="TOP_CENTER" text="uniqueizer" textAlignment="CENTER" textOverrun="CLIP" BorderPane.alignment="CENTER">
+            <Label fx:id="title" alignment="TOP_CENTER" text="uniqueizer" textAlignment="CENTER" textOverrun="CLIP" BorderPane.alignment="CENTER">
                 <font>
-                    <Font name="JetBrains Mono Medium" size="48.0" />
+                    <Font name="Arial" size="48.0" />
                 </font>
                 <BorderPane.margin>
                     <Insets />
@@ -101,9 +101,9 @@
                     </Label>
                 </GridPane>
                 <Separator GridPane.rowIndex="1" />
-                <CheckBox fx:id="replace_to_offer_cbx" mnemonicParsing="false" text="Replace href to {offer}" textAlignment="CENTER" GridPane.rowIndex="3">
+                <CheckBox fx:id="replace_to_offer_cbx" mnemonicParsing="false" text="Replace href with {offer}" textAlignment="CENTER" GridPane.rowIndex="3">
                     <GridPane.margin>
-                        <Insets />
+                        <Insets top="4.0" />
                     </GridPane.margin>
                     <font>
                         <Font name="JetBrains Mono Medium" size="12.0" />

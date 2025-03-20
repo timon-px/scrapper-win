@@ -1,6 +1,10 @@
 target/
 out/
+output/
 dist/
+custom-runtime/
+app-bundle/
+inno-setup/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/

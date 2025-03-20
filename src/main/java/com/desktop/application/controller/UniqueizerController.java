@@ -67,11 +67,15 @@ public class UniqueizerController {
     }
 
     private void dragNDropInit(VBox vbox) {
+        vbox.setOnDragExited(evt -> vbox.setOpacity(1));
+
         vbox.setOnDragOver(evt -> {
+            vbox.setOpacity(0.5);
             if (evt.getDragboard().hasFiles() && evt.getDragboard().getFiles().size() == 1) {
-                evt.acceptTransferModes(TransferMode.LINK);
+                evt.acceptTransferModes(TransferMode.ANY);
             }
         });
+
         vbox.setOnDragDropped(evt -> {
             File file = evt.getDragboard().getFiles().getFirst();
             String validation = UniqueizerValidation.validateFilePathField(file.getAbsolutePath());

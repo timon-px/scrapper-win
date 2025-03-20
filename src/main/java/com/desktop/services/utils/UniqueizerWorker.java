@@ -1,7 +1,9 @@
 package com.desktop.services.utils;
 
 import com.desktop.services.config.constants.UniqueizerConstants;
+import org.apache.commons.io.FilenameUtils;
 
+import java.io.File;
 import java.security.SecureRandom;
 
 public class UniqueizerWorker {
@@ -37,4 +39,11 @@ public class UniqueizerWorker {
         return UniqueizerConstants.PREFIXES.get(randomId);
     }
 
+    public static String GetUniqueizerFileName(File file) {
+        String fileName = file.getName();
+        String baseName = FilenameUtils.getBaseName(fileName);
+        String extension = FilenameUtils.getExtension(fileName);
+
+        return baseName + UniqueizerConstants.UNIQUE_SUFFIX_NAME + "." + extension;
+    }
 }
