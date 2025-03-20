@@ -65,7 +65,7 @@
 
 /* TAB PANE */
 .tab-pane > .tab-header-area > .headers-region > .tab {
-    -fx-cursor: hand;
+    -fx-cursor: default;
 }
 
 .tab-pane > .tab-header-area {

@@ -8,7 +8,6 @@
     <BorderPane VBox.vgrow="ALWAYS">
         <center>
             <TabPane fx:id="tab_pane" tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER">
-                <Tab fx:id="web_parser_tab" text="Web Parser" />
                 <Tab fx:id="uniqueizer_tab" text="Uniqueizer" />
             </TabPane>
         </center>

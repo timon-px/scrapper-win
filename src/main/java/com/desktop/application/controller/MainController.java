@@ -19,5 +19,6 @@ public class MainController {
     private void initialize() throws IOException {
         FXMLLoader uniqueizerTab = new FXMLLoader(ScrapperApplication.class.getResource("uniqueizer-tab-view.fxml"));
         uniqueizer_tab.setContent(uniqueizerTab.load());
+        uniqueizer_tab.setClosable(false);
     }
 }
