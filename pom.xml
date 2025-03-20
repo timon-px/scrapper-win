@@ -5,9 +5,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.desktop</groupId>
-    <artifactId>scrapper</artifactId>
+    <artifactId>uniqueizer</artifactId>
     <version>1.2-SNAPSHOT</version>
-    <name>scrapper</name>
+    <name>uniqueizer</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
