@@ -2,12 +2,12 @@ package com.desktop.services.services.classes;
 
 import com.desktop.dto.UniqueizerRequestDTO;
 import com.desktop.dto.UniqueizerResponseDTO;
-import com.desktop.services.config.constants.UniqueizerConstants;
 import com.desktop.services.processors.interfaces.IDocumentProcess;
 import com.desktop.services.processors.uniqueizer.UniqueizerProcessor;
 import com.desktop.services.services.interfaces.IUniqueizerService;
 import com.desktop.services.storage.IStorageWorker;
 import com.desktop.services.storage.StorageWorker;
+import com.desktop.services.utils.UniqueizerWorker;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import org.jsoup.Jsoup;
@@ -35,7 +35,7 @@ public class UniqueizerService implements IUniqueizerService {
                 Document document = Jsoup.parse(file);
 
                 return startProcesses(document, uniqueizerRequest.isReplaceSelected())
-                        .thenCompose(unused -> storageWorker.SaveContentAsync(document.outerHtml(), UniqueizerConstants.UNIQUE_HTML_NAME))
+                        .thenCompose(unused -> storageWorker.SaveContentAsync(document.outerHtml(), UniqueizerWorker.GetUniqueizerFileName(file)))
                         .thenApply(finalPath -> {
                             Path responsePath = finalPath.getParent().toAbsolutePath();
                             return new UniqueizerResponseDTO(true, responsePath.toString());

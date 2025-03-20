@@ -55,8 +55,12 @@ public class ControllerWorker implements IControllerWorker {
         button.setOnAction(actionEvent -> {
             Scene currentScene = button.getScene();
 
+            FileChooser.ExtensionFilter extensionFilter = new FileChooser
+                    .ExtensionFilter("HTML Files", "*.html", "*.htm", "*.php");
+
             FileChooser fileChooser = new FileChooser();
-            fileChooser.setTitle("Choose file");
+            fileChooser.setTitle("Choose HTML File");
+            fileChooser.getExtensionFilters().add(extensionFilter);
 
             File file = fileChooser.showOpenDialog(currentScene.getWindow());
             if (file != null) {
