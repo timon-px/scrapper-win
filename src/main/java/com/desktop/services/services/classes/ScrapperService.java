@@ -13,10 +13,9 @@ import com.desktop.services.services.interfaces.IScrapperService;
 import com.desktop.services.storage.IStorageWorker;
 import com.desktop.services.storage.StorageWorker;
 import com.desktop.services.utils.DocumentWorker;
+import com.desktop.services.utils.ScrapperWorker;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
-import org.jsoup.Connection;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 import java.io.IOException;
@@ -42,8 +41,10 @@ public class ScrapperService implements IScrapperService {
             ConcurrentHashMap<String, FileSaveModel> filesToSaveList = new ConcurrentHashMap<>();
 
             try {
-                Connection.Response response = Jsoup.connect(scrapperRequest.getUrl()).execute();
-                Document document = response.parse();
+                Document document = ScrapperWorker
+                        .GetJsoupResponse(scrapperRequest.getUrl())
+                        .parse();
+
                 DocumentWorker.UpdateProgress(progress, 0.05);
 
                 String fileHost = new URI(document.location()).getHost();

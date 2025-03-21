@@ -3,12 +3,24 @@ package com.desktop.services.utils;
 import com.desktop.services.config.constants.RegexConstants;
 import com.desktop.services.config.constants.ScrapperWorkerConstants;
 import com.desktop.services.config.enums.SaveAsEnum;
+import org.jsoup.Connection;
+import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
+import java.io.IOException;
+import java.net.Proxy;
 import java.net.URI;
 import java.net.URISyntaxException;
 
 public class ScrapperWorker {
+    public static Connection.Response GetJsoupResponse(String url) throws IOException {
+        return getJsoupConnection(url).execute();
+    }
+
+    public static Connection.Response GetJsoupResponse(String url, Proxy proxy) throws IOException {
+        return getJsoupConnection(url).proxy(proxy).execute();
+    }
+
     public static String CleanName(String fileName) {
         int invalidIndex = getInvalidFileNameCharIndex(fileName);
         if (invalidIndex > 0) return fileName.substring(0, invalidIndex);
@@ -59,5 +71,9 @@ public class ScrapperWorker {
         }
 
         return -1;
+    }
+
+    private static Connection getJsoupConnection(String url) {
+        return Jsoup.connect(url);
     }
 }
