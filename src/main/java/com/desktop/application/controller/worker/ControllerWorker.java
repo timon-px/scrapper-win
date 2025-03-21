@@ -2,6 +2,7 @@ package com.desktop.application.controller.worker;
 
 import com.desktop.application.controller.worker.interfaces.IControllerWorker;
 import com.desktop.application.utils.FileExplorerHelper;
+import com.desktop.services.config.constants.UniqueizerConstants;
 import javafx.application.Platform;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -51,7 +52,7 @@ public class ControllerWorker implements IControllerWorker {
     }
 
     @Override
-    public void InitFileBrowseBtn(Button button, Consumer<File> callback) {
+    public void InitFileBrowseBtn(Button button, Consumer<List<File>> callback) {
         button.setOnAction(actionEvent -> {
             Scene currentScene = button.getScene();
 
@@ -62,11 +63,24 @@ public class ControllerWorker implements IControllerWorker {
             fileChooser.setTitle("Choose HTML File");
             fileChooser.getExtensionFilters().add(extensionFilter);
 
-            File file = fileChooser.showOpenDialog(currentScene.getWindow());
-            if (file != null) {
-                callback.accept(file);
+            List<File> files = fileChooser.showOpenMultipleDialog(currentScene.getWindow());
+            System.out.println("LIST " + files);
+            if (files != null && !files.isEmpty()) {
+                callback.accept(files);
             }
         });
+    }
+
+    @Override
+    public String GetStringFromFiles(List<File> files) {
+        List<String> selectedFiles = files.stream().map(File::getAbsolutePath).toList();
+        return String.join(UniqueizerConstants.FILE_LIST_SEPARATOR, selectedFiles);
+    }
+
+    @Override
+    public List<File> GetFilesFromString(String filesString) {
+        List<String> selectedPaths = List.of(filesString.split(","));
+        return selectedPaths.stream().map(path -> new File(path.trim())).toList();
     }
 
     @Override

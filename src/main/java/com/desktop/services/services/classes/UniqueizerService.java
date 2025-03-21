@@ -31,7 +31,7 @@ public class UniqueizerService implements IUniqueizerService {
 
         return CompletableFuture.supplyAsync(() -> {
             try {
-                File file = uniqueizerRequest.getFile();
+                File file = uniqueizerRequest.getFiles().getFirst();
                 Document document = Jsoup.parse(file);
 
                 return startProcesses(document, uniqueizerRequest.isReplaceSelected())
