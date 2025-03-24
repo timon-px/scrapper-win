@@ -1,10 +1,13 @@
 package com.desktop.services.utils;
 
 import com.desktop.services.config.constants.UniqueizerConstants;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
 import java.security.SecureRandom;
+import java.util.List;
 
 public class UniqueizerWorker {
     private static final SecureRandom random = new SecureRandom();
@@ -45,5 +48,24 @@ public class UniqueizerWorker {
         String extension = FilenameUtils.getExtension(fileName);
 
         return baseName + UniqueizerConstants.UNIQUE_SUFFIX_NAME + "." + extension;
+    }
+
+    public static void BindOverallProgress(DoubleProperty overallProgress, List<SimpleDoubleProperty> fileProgresses) {
+        bindProgressListener(overallProgress, overallProgress, fileProgresses);
+
+        // Bind each file's progress to trigger the overall update
+        for (DoubleProperty fileProgress : fileProgresses) {
+            bindProgressListener(fileProgress, overallProgress, fileProgresses);
+        }
+    }
+
+    private static void bindProgressListener(DoubleProperty currentProgress, DoubleProperty overallProgress, List<SimpleDoubleProperty> fileProgresses) {
+        currentProgress.addListener((obs, oldVal, newVal) -> {
+            double total = fileProgresses.stream()
+                    .mapToDouble(DoubleProperty::get)
+                    .sum();
+            double average = fileProgresses.isEmpty() ? 0.0 : total / fileProgresses.size();
+            overallProgress.set(average);
+        });
     }
 }

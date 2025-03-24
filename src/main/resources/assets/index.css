@@ -9,10 +9,6 @@
     -fx-font-size: 48;
 }
 
-#replace_to_offer_cbx {
-    -fx-cursor: hand;
-}
-
 /* INPUT */
 .text-field {
     -fx-border-radius: 4;
@@ -118,6 +114,14 @@
 }
 
 /* CHECKBOX */
+.check-box {
+    -fx-cursor: hand;
+}
+
+.check-box:disabled {
+    -fx-cursor: default;
+}
+
 .check-box .box {
     -fx-background-color: #ffffff;
     -fx-border-color: #2b2b2b;

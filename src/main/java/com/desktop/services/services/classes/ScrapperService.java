@@ -51,17 +51,11 @@ public class ScrapperService implements IScrapperService {
 
                 return startProcesses(document, path, filesToSaveList, storageWorker)
                         .thenCompose(unused -> {
-                            document.select("base").remove();
-
-                            replaceHrefToOffer(document, scrapperRequest.isReplaceSelected());
-
+                            finalProcess(document, scrapperRequest.getProcessingOptions());
                             return storageWorker.SaveContentAsync(document.outerHtml(), path, ScrapperConstants.HTML_NAME);
                         })
-                        .thenApply(finalPath -> {
-                            progress.set(1.0);
-                            return new ScrapperResponseDTO(true, path.toAbsolutePath().toString());
-                        })
-                        .exceptionally(ex -> new ScrapperResponseDTO(false, "Error: " + ex.getMessage())).join();
+                        .thenApply(finalPath -> new ScrapperResponseDTO(true, path.toAbsolutePath(), "Website has successfully parsed!"))
+                        .exceptionally(ex -> new ScrapperResponseDTO(false, "Error was occurred while web parsing:\n" + ex.getMessage())).join();
             } catch (IOException | URISyntaxException e) {
                 throw new RuntimeException(e);
             }
@@ -79,7 +73,8 @@ public class ScrapperService implements IScrapperService {
                 .thenCompose(unused -> filesProcessor.SaveAsync(filesToSaveList, progress));
     }
 
-    private void replaceHrefToOffer(Document document, boolean isSetOffer) {
-        if (isSetOffer) DocumentWorker.ReplaceAnchorHref(document, "{offer}");
+    private void finalProcess(Document document, ScrapperRequestDTO.ProcessingOptions processingOptions) {
+        document.select("base").remove();
+        if (processingOptions.shouldReplaceHref()) DocumentWorker.ReplaceAnchorHref(document, "{offer}");
     }
 }

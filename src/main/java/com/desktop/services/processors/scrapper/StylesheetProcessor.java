@@ -13,6 +13,8 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URLDecoder;
@@ -24,6 +26,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class StylesheetProcessor implements IDocumentProcess {
+    private static final Logger log = LoggerFactory.getLogger(StylesheetProcessor.class);
+
     private final IStorageWorker storageWorker;
     private final Path stylesheetPath;
     private final ConcurrentHashMap<String, FileSaveModel> filesToSave;
@@ -103,7 +107,7 @@ public class StylesheetProcessor implements IDocumentProcess {
             storageWorker.SaveContentAsync(updatedCss, stylesheetPath, uniqueCssName).join();
             return uniqueCssName;
         } catch (IOException e) {
-            System.out.println("PROCESS CSS FILE ERROR " + e.getMessage());
+            log.error("Process stylesheet file error: {}", e.getMessage());
             return null;
         }
     }

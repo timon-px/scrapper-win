@@ -3,37 +3,38 @@ package com.desktop.dto;
 import java.nio.file.Path;
 
 public class ScrapperRequestDTO {
-    private Path directory;
-    private String url;
-    private boolean isReplaceSelected;
+    private final Path directory;
+    private final String url;
+    private final ProcessingOptions processingOptions;
 
-    public ScrapperRequestDTO(Path directory, String url, boolean isReplaceSelected) {
+    public ScrapperRequestDTO(Path directory, String url, ProcessingOptions processingOptions) {
         this.directory = directory;
         this.url = url;
-        this.isReplaceSelected = isReplaceSelected;
+        this.processingOptions = processingOptions;
     }
 
     public Path getDirectory() {
         return directory;
     }
 
-    public void setDirectory(Path directory) {
-        this.directory = directory;
-    }
 
     public String getUrl() {
         return url;
     }
 
-    public void setUrl(String url) {
-        this.url = url;
+    public ProcessingOptions getProcessingOptions() {
+        return processingOptions;
     }
 
-    public boolean isReplaceSelected() {
-        return isReplaceSelected;
-    }
+    public static class ProcessingOptions {
+        private final boolean replaceHref;
 
-    public void setReplaceSelected(boolean replaceSelected) {
-        isReplaceSelected = replaceSelected;
+        public ProcessingOptions(boolean replaceHref) {
+            this.replaceHref = replaceHref;
+        }
+
+        public boolean shouldReplaceHref() {
+            return replaceHref;
+        }
     }
 }

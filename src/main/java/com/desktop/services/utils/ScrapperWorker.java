@@ -32,7 +32,6 @@ public class ScrapperWorker {
             URI resolvedUri = baseUri.resolve(relativeUrl);
             return resolvedUri.toString();
         } catch (URISyntaxException e) {
-            System.out.println("Failed to resolve absolute url: " + relativeUrl);
             return relativeUrl;
         }
     }

@@ -19,8 +19,8 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public class UniqueizerController {
@@ -52,6 +52,8 @@ public class UniqueizerController {
     private ProgressBar progress_bar;
     @FXML
     private CheckBox replace_to_offer_cbx;
+    @FXML
+    private CheckBox replace_chars_cbx;
 
     @FXML
     private void initialize() {
@@ -71,17 +73,18 @@ public class UniqueizerController {
 
         vbox.setOnDragOver(evt -> {
             vbox.setOpacity(0.5);
-            if (evt.getDragboard().hasFiles() && evt.getDragboard().getFiles().size() == 1) {
+            if (evt.getDragboard().hasFiles()) {
                 evt.acceptTransferModes(TransferMode.ANY);
             }
         });
 
         vbox.setOnDragDropped(evt -> {
-            File file = evt.getDragboard().getFiles().getFirst();
-            String validation = UniqueizerValidation.validateFilePathField(file.getAbsolutePath());
-            controllerWorker.SetErrorLabel(file_path_error_lbl, validation);
+            List<File> files = evt.getDragboard().getFiles();
 
-            chooseFile(file_path_tf, save_path_tf, file);
+            List<String> errors = getFilesValidation(files);
+            controllerWorker.SetErrorLabel(file_path_error_lbl, !errors.isEmpty() ? errors.getFirst() : "");
+
+            chooseFiles(file_path_tf, save_path_tf, files);
         });
     }
 
@@ -94,12 +97,12 @@ public class UniqueizerController {
     }
 
     private void browseFileBtnInit(Button button, TextField textField, TextField relativeTextField) {
-        controllerWorker.InitFileBrowseBtn(button, file -> chooseFile(textField, relativeTextField, file));
+        controllerWorker.InitFileBrowseBtn(button, files -> chooseFiles(textField, relativeTextField, files));
     }
 
-    private static void chooseFile(TextField textField, TextField relativeTextField, File file) {
-        textField.setText(file.getAbsolutePath());
-        relativeTextField.setText(file.getParentFile().getAbsolutePath());
+    private void chooseFiles(TextField textField, TextField relativeTextField, List<File> files) {
+        textField.setText(controllerWorker.GetStringFromFiles(files));
+        relativeTextField.setText(files.getFirst().getParentFile().getAbsolutePath());
     }
 
     private void browseDirectoryBtnInit(Button button, TextField textField) {
@@ -109,30 +112,44 @@ public class UniqueizerController {
     private void handleSubmit() {
         String filePath = file_path_tf.getText().trim();
         String savePath = save_path_tf.getText().trim();
-        boolean isReplaceSelected = replace_to_offer_cbx.isSelected();
 
-        if (!validateFields(filePath, savePath)) return;
+        List<File> files = controllerWorker.GetFilesFromString(filePath);
 
-        Path fileDir = Paths.get(filePath);
+        if (!validateFields(files, savePath)) return;
+
         Path saveDir = Paths.get(savePath);
-        File file = fileDir.toFile();
 
         IUniqueizerService uniqueizerService = new UniqueizerService();
         initSubmitAction(uniqueizerService);
 
-        CompletableFuture<UniqueizerResponseDTO> future = uniqueizerService.UniqueizeWeb(new UniqueizerRequestDTO(file, saveDir, isReplaceSelected));
+        UniqueizerRequestDTO.ProcessingOptions processingOptions = getProcessingOptions();
+
+        CompletableFuture<UniqueizerResponseDTO> future = uniqueizerService.UniqueizeWeb(new UniqueizerRequestDTO(files, saveDir, processingOptions));
         future.thenAccept(response -> Platform.runLater(() -> {
-            String responseMessage = response.getMessage();
-            successSubmitAction(responseMessage);
+            List<Path> directories = response.getDirectories();
+            String message = response.getMessage();
+
+            if (!directories.isEmpty())
+                successSubmitAction(directories.getFirst(), message);
         })).exceptionally(throwable -> {
             Platform.runLater(() -> errorSubmitAction(throwable.getMessage()));
             return null;
         });
     }
 
-    private boolean validateFields(String filePath, String savePath) {
-        String fileError = UniqueizerValidation.validateFilePathField(filePath);
+    private UniqueizerRequestDTO.ProcessingOptions getProcessingOptions() {
+        boolean shouldReplaceHref = replace_to_offer_cbx.isSelected();
+        boolean shouldReplaceChars = replace_chars_cbx.isSelected();
+        return new UniqueizerRequestDTO
+                .ProcessingOptions(shouldReplaceHref, shouldReplaceChars);
+    }
+
+    private boolean validateFields(List<File> files, String savePath) {
+        String fileError = null;
         String saveError = UniqueizerValidation.validateSavePathField(savePath);
+
+        List<String> filesErrors = getFilesValidation(files);
+        if (!filesErrors.isEmpty()) fileError = filesErrors.getFirst();
 
         controllerWorker.SetErrorLabel(file_path_error_lbl, fileError);
         controllerWorker.SetErrorLabel(save_path_error_lbl, saveError);
@@ -147,28 +164,28 @@ public class UniqueizerController {
         progress_bar.progressProperty().bind(uniqueizerService.progressProperty());
     }
 
-    private void successSubmitAction(String responseMessage) {
+    private void successSubmitAction(Path directory, String message) {
         controllerWorker.SetLoading(false, disableNodes, progress_bar);
         progress_bar.progressProperty().unbind();
 
-        Optional<ButtonType> result = controllerWorker.ShowAllert(Alert.AlertType.CONFIRMATION,
-                "Done",
-                "Website has successfully unified!",
-                "Do You want to open folder with file:\n" + responseMessage + "?");
-
-        if (result.isPresent() && result.get() == ButtonType.OK) {
-            try {
-                Path responsePath = Paths.get(responseMessage);
-                controllerWorker.OpenDownloadedFolder(responsePath);
-            } catch (RuntimeException e) {
-                log.error(e.getMessage());
-            }
-        }
+        controllerWorker.OpenDownloadedFolderDialog(directory, message);
     }
 
     private void errorSubmitAction(String responseMessage) {
         controllerWorker.SetLoading(false, disableNodes, progress_bar);
         progress_bar.progressProperty().unbind(); // Unbind when done
         controllerWorker.ShowAllert(Alert.AlertType.ERROR, "Error!", "Something went wrong!", responseMessage);
+    }
+
+    private List<String> getFilesValidation(List<File> files) {
+        List<String> errors = new ArrayList<>();
+
+        for (File file : files) {
+            String validation = UniqueizerValidation.validateFilePathField(file.getAbsolutePath());
+            if (validation != null)
+                errors.add(validation);
+        }
+
+        return errors;
     }
 }

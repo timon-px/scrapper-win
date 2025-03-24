@@ -5,6 +5,8 @@ import com.desktop.services.processors.interfaces.IFilesProcess;
 import com.desktop.services.storage.IStorageWorker;
 import com.desktop.services.utils.DocumentWorker;
 import javafx.beans.property.DoubleProperty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -14,6 +16,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class FilesProcess implements IFilesProcess {
+    private static final Logger log = LoggerFactory.getLogger(FilesProcess.class);
+
     private final IStorageWorker storageWorker;
     private final Path mainPath;
 
@@ -40,7 +44,7 @@ public class FilesProcess implements IFilesProcess {
         // Wait for all downloads to complete
         return CompletableFuture.allOf(downloadFutures.toArray(new CompletableFuture[0]))
                 .exceptionally(throwable -> {
-                    System.err.println("Error during downloads: " + throwable.getMessage());
+                    log.error("Error during downloads: {}", throwable.getMessage());
                     return null;
                 });
     }
@@ -63,7 +67,7 @@ public class FilesProcess implements IFilesProcess {
                 double fileProgress = DocumentWorker.GetProgressIncrement(completed, totalFiles * downloadWeight);
                 DocumentWorker.UpdateProgress(progress, fileProgress + baseProgress);
             }).exceptionally(throwable -> {
-                System.err.println("Download failed: " + throwable.getMessage());
+                log.error("Download failed: {}", throwable.getMessage());
                 return null;
             });
 
