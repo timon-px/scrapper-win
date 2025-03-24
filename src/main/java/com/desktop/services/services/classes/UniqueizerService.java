@@ -16,6 +16,7 @@ import org.jsoup.nodes.Document;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class UniqueizerService implements IUniqueizerService {
@@ -38,7 +39,7 @@ public class UniqueizerService implements IUniqueizerService {
                         .thenCompose(unused -> storageWorker.SaveContentAsync(document.outerHtml(), UniqueizerWorker.GetUniqueizerFileName(file)))
                         .thenApply(finalPath -> {
                             Path responsePath = finalPath.getParent().toAbsolutePath();
-                            return new UniqueizerResponseDTO(true, responsePath.toString());
+                            return new UniqueizerResponseDTO(true, List.of(responsePath), "Website has successfully unified!");
                         })
                         .exceptionally(ex -> new UniqueizerResponseDTO(false, "Error: " + ex.getMessage())).join();
             } catch (IOException e) {

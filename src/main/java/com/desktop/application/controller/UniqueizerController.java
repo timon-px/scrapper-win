@@ -21,7 +21,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public class UniqueizerController {
@@ -124,8 +123,11 @@ public class UniqueizerController {
 
         CompletableFuture<UniqueizerResponseDTO> future = uniqueizerService.UniqueizeWeb(new UniqueizerRequestDTO(files, saveDir, isReplaceSelected));
         future.thenAccept(response -> Platform.runLater(() -> {
-            String responseMessage = response.getMessage();
-            successSubmitAction(responseMessage);
+            List<Path> directories = response.getDirectories();
+            String message = response.getMessage();
+
+            if (!directories.isEmpty())
+                successSubmitAction(directories.getFirst(), message);
         })).exceptionally(throwable -> {
             Platform.runLater(() -> errorSubmitAction(throwable.getMessage()));
             return null;
@@ -152,23 +154,11 @@ public class UniqueizerController {
         progress_bar.progressProperty().bind(uniqueizerService.progressProperty());
     }
 
-    private void successSubmitAction(String responseMessage) {
+    private void successSubmitAction(Path directory, String message) {
         controllerWorker.SetLoading(false, disableNodes, progress_bar);
         progress_bar.progressProperty().unbind();
 
-        Optional<ButtonType> result = controllerWorker.ShowAllert(Alert.AlertType.CONFIRMATION,
-                "Done",
-                "Website has successfully unified!",
-                "Do You want to open folder with file:\n" + responseMessage + "?");
-
-        if (result.isPresent() && result.get() == ButtonType.OK) {
-            try {
-                Path responsePath = Paths.get(responseMessage);
-                controllerWorker.OpenDownloadedFolder(responsePath);
-            } catch (RuntimeException e) {
-                log.error(e.getMessage());
-            }
-        }
+        controllerWorker.OpenDownloadedFolderDialog(directory, message);
     }
 
     private void errorSubmitAction(String responseMessage) {

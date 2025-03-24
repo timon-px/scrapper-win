@@ -95,6 +95,22 @@ public class ControllerWorker implements IControllerWorker {
     }
 
     @Override
+    public void OpenDownloadedFolderDialog(Path directory, String message) {
+        Optional<ButtonType> result = ShowAllert(Alert.AlertType.CONFIRMATION,
+                "Done",
+                message,
+                "Do You want to open folder:\n" + directory + "?");
+
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            try {
+                OpenDownloadedFolder(directory);
+            } catch (RuntimeException e) {
+                log.error(e.getMessage());
+            }
+        }
+    }
+
+    @Override
     public void OpenDownloadedFolder(Path folderPath) {
         FileExplorerHelper.OpenFolderAsync(folderPath)
                 .thenRun(() -> log.info("Folder opened successfully: {}", folderPath))

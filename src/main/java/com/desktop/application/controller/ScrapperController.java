@@ -19,7 +19,6 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public class ScrapperController {
@@ -88,8 +87,10 @@ public class ScrapperController {
 
         CompletableFuture<ScrapperResponseDTO> future = scrapperService.GetWeb(new ScrapperRequestDTO(folderPath, webUrl, isReplaceSelected));
         future.thenAccept(response -> Platform.runLater(() -> {
-            String responseMessage = response.getMessage();
-            successSubmitAction(responseMessage);
+            Path directory = response.getDirectory();
+            String message = response.getMessage();
+
+            successSubmitAction(directory, message);
         })).exceptionally(throwable -> {
             Platform.runLater(() -> errorSubmitAction(throwable.getMessage()));
             return null;
@@ -113,24 +114,11 @@ public class ScrapperController {
         progress_bar.progressProperty().bind(scrapperService.progressProperty());
     }
 
-    private void successSubmitAction(String responseMessage) {
+    private void successSubmitAction(Path directory, String message) {
         controllerWorker.SetLoading(false, disableNodes, progress_bar);
         progress_bar.progressProperty().unbind();
 
-        Optional<ButtonType> result = controllerWorker.ShowAllert(Alert.AlertType.CONFIRMATION,
-                "Done",
-                "Website has successfully parsed!",
-                "Do You want to open folder:\n" + responseMessage + "?");
-
-
-        if (result.isPresent() && result.get() == ButtonType.OK) {
-            try {
-                Path responsePath = Paths.get(responseMessage);
-                controllerWorker.OpenDownloadedFolder(responsePath);
-            } catch (RuntimeException e) {
-                log.error(e.getMessage());
-            }
-        }
+        controllerWorker.OpenDownloadedFolderDialog(directory, message);
     }
 
     private void errorSubmitAction(String responseMessage) {

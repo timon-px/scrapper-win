@@ -51,17 +51,12 @@ public class ScrapperService implements IScrapperService {
 
                 return startProcesses(document, path, filesToSaveList, storageWorker)
                         .thenCompose(unused -> {
-                            document.select("base").remove();
-
+                            removeBaseHref(document);
                             replaceHrefToOffer(document, scrapperRequest.isReplaceSelected());
-
                             return storageWorker.SaveContentAsync(document.outerHtml(), path, ScrapperConstants.HTML_NAME);
                         })
-                        .thenApply(finalPath -> {
-                            progress.set(1.0);
-                            return new ScrapperResponseDTO(true, path.toAbsolutePath().toString());
-                        })
-                        .exceptionally(ex -> new ScrapperResponseDTO(false, "Error: " + ex.getMessage())).join();
+                        .thenApply(finalPath -> new ScrapperResponseDTO(true, path.toAbsolutePath(), "Website has successfully parsed!"))
+                        .exceptionally(ex -> new ScrapperResponseDTO(false, "Error was occurred while web parsing:\n" + ex.getMessage())).join();
             } catch (IOException | URISyntaxException e) {
                 throw new RuntimeException(e);
             }
@@ -77,6 +72,10 @@ public class ScrapperService implements IScrapperService {
         return stylesheetProcessor.ProcessAsync(document, progress)
                 .thenCompose(unused -> htmlProcessor.ProcessAsync(document, progress))
                 .thenCompose(unused -> filesProcessor.SaveAsync(filesToSaveList, progress));
+    }
+
+    private void removeBaseHref(Document document) {
+        document.select("base").remove();
     }
 
     private void replaceHrefToOffer(Document document, boolean isSetOffer) {

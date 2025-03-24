@@ -24,5 +24,7 @@ public interface IControllerWorker {
 
     Optional<ButtonType> ShowAllert(Alert.AlertType type, String title, String header, String content);
 
+    void OpenDownloadedFolderDialog(Path directory, String message);
+
     void OpenDownloadedFolder(Path folderPath);
 }
