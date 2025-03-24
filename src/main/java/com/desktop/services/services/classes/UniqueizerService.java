@@ -143,7 +143,7 @@ public class UniqueizerService implements IUniqueizerService {
     private UniqueizerResponseDTO createResponse(List<Path> successfulPaths) {
         String message = successfulPaths.isEmpty()
                 ? "No files were processed successfully"
-                : "Websites have been successfully unified! Processed " + successfulPaths.size() + " files";
+                : "Websites have been successfully unified!\nProcessed " + successfulPaths.size() + " files";
 
         return new UniqueizerResponseDTO(
                 !successfulPaths.isEmpty(),
