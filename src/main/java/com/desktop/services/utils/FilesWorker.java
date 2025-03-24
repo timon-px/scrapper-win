@@ -4,6 +4,8 @@ import com.desktop.services.config.enums.SaveAsEnum;
 import com.desktop.services.models.FileSaveModel;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.tika.Tika;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -12,6 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class FilesWorker {
     private static final Tika mimetypeDetector = new Tika();
+    private static final Logger log = LoggerFactory.getLogger(FilesWorker.class);
 
     public static FileSaveModel SetFilesToSave(String absoluteUrl, ConcurrentHashMap<String, FileSaveModel> filesToSave) {
         return filesToSave.computeIfAbsent(absoluteUrl, url -> {
@@ -30,7 +33,7 @@ public class FilesWorker {
 
             return ScrapperWorker.GetSaveAsFromContentType(mimetype);
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            log.error(e.getMessage());
             return SaveAsEnum.ASSET;
         }
     }

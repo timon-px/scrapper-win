@@ -64,7 +64,7 @@ public class ControllerWorker implements IControllerWorker {
             fileChooser.getExtensionFilters().add(extensionFilter);
 
             List<File> files = fileChooser.showOpenMultipleDialog(currentScene.getWindow());
-            System.out.println("LIST " + files);
+
             if (files != null && !files.isEmpty()) {
                 callback.accept(files);
             }

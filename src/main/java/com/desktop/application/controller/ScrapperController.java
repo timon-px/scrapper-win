@@ -77,7 +77,6 @@ public class ScrapperController {
     private void handleSubmit() {
         String webUrl = web_url_tf.getText().trim();
         String dirPath = dir_path_tf.getText().trim();
-        boolean isReplaceSelected = replace_to_offer_cbx.isSelected();
 
         if (!validateFields(dirPath, webUrl)) return;
         Path folderPath = Paths.get(dirPath);

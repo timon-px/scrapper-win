@@ -3,6 +3,8 @@ package com.desktop.services.storage;
 import com.desktop.services.config.enums.SaveAsEnum;
 import com.desktop.services.models.FileSaveModel;
 import com.desktop.services.utils.PathHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
@@ -16,6 +18,8 @@ import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 
 public class StorageWorker implements IStorageWorker {
+    private static final Logger log = LoggerFactory.getLogger(StorageWorker.class);
+
     private final Path baseLocation;
     private final HttpClient httpClient;
 
@@ -76,7 +80,7 @@ public class StorageWorker implements IStorageWorker {
 
             return sendRequestAsync(request, filePath, url);
         } catch (Exception e) {
-            System.err.println("Download failed for " + url + ": " + e.getMessage());
+            log.error("Download failed for {}: {}", url, e.getMessage());
             return CompletableFuture.failedFuture(new Exception("Failed to download " + url + ": " + e.getMessage()));
         }
     }
@@ -95,14 +99,14 @@ public class StorageWorker implements IStorageWorker {
                     if (response.statusCode() == 200) {
                         try (var inputStream = response.body()) {
                             Files.copy(inputStream, destination, StandardCopyOption.REPLACE_EXISTING);
-                            System.out.println("Downloaded: " + url + " to " + destination);
+                            log.info("Downloaded: {} to {}", url, destination);
                             return "Downloaded: " + url;
                         } catch (Exception e) {
-                            System.out.println("Failed to save file: " + url);
+                            log.error("Failed to save file: {}", url);
                             throw new RuntimeException("Failed to save file: " + url, e);
                         }
                     } else {
-                        System.out.println("HTTP error: " + response.statusCode() + " for " + url);
+                        log.error("HTTP error: {} for {}", response.statusCode(), url);
                         throw new RuntimeException("HTTP error: " + response.statusCode() + " for " + url);
                     }
                 }).exceptionally(throwable -> "Failed: " + url + " - " + throwable.getMessage());
