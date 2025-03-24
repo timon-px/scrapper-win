@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<mime-info>
+    <mime-type type="font/ttf">
+        <glob pattern="*.ttf"/>
+    </mime-type>
+    <mime-type type="font/otf">
+        <glob pattern="*.otf"/>
+    </mime-type>
+    <mime-type type="font/woff">
+        <glob pattern="*.woff"/>
+    </mime-type>
+    <mime-type type="font/woff2">
+        <glob pattern="*.woff2"/>
+    </mime-type>
+    <mime-type type="font/eot">
+        <glob pattern="*.eot"/>
+    </mime-type>
+    <mime-type type="font/sfnt">
+        <glob pattern="*.sfnt"/>
+    </mime-type>
+    <mime-type type="scrapper/not-font">
+        <glob pattern="*.*"/>
+    </mime-type>
+</mime-info>
