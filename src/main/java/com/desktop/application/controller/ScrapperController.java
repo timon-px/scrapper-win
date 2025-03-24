@@ -85,7 +85,8 @@ public class ScrapperController {
         IScrapperService scrapperService = new ScrapperService();
         initSubmitAction(scrapperService);
 
-        CompletableFuture<ScrapperResponseDTO> future = scrapperService.GetWeb(new ScrapperRequestDTO(folderPath, webUrl, isReplaceSelected));
+        ScrapperRequestDTO.ProcessingOptions processingOptions = getProcessingOptions();
+        CompletableFuture<ScrapperResponseDTO> future = scrapperService.GetWeb(new ScrapperRequestDTO(folderPath, webUrl, processingOptions));
         future.thenAccept(response -> Platform.runLater(() -> {
             Path directory = response.getDirectory();
             String message = response.getMessage();
@@ -95,6 +96,12 @@ public class ScrapperController {
             Platform.runLater(() -> errorSubmitAction(throwable.getMessage()));
             return null;
         });
+    }
+
+    private ScrapperRequestDTO.ProcessingOptions getProcessingOptions() {
+        boolean shouldReplaceHref = replace_to_offer_cbx.isSelected();
+        return new ScrapperRequestDTO
+                .ProcessingOptions(shouldReplaceHref);
     }
 
     private boolean validateFields(String dirPath, String webUrl) {

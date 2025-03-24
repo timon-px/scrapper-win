@@ -7,12 +7,12 @@ import java.util.List;
 public class UniqueizerRequestDTO {
     private final List<File> files;
     private final Path savePath;
-    private final boolean isReplaceSelected;
+    private final ProcessingOptions processingOptions;
 
-    public UniqueizerRequestDTO(List<File> files, Path savePath, boolean isReplaceSelected) {
+    public UniqueizerRequestDTO(List<File> files, Path savePath, ProcessingOptions processingOptions) {
         this.files = files;
         this.savePath = savePath;
-        this.isReplaceSelected = isReplaceSelected;
+        this.processingOptions = processingOptions;
     }
 
     public List<File> getFiles() {
@@ -23,7 +23,25 @@ public class UniqueizerRequestDTO {
         return savePath;
     }
 
-    public boolean isReplaceSelected() {
-        return isReplaceSelected;
+    public ProcessingOptions getProcessingOptions() {
+        return processingOptions;
+    }
+
+    public static class ProcessingOptions {
+        private final boolean replaceHref;
+        private final boolean processChars;
+
+        public ProcessingOptions(boolean replaceHref, boolean processChars) {
+            this.replaceHref = replaceHref;
+            this.processChars = processChars;
+        }
+
+        public boolean shouldReplaceHref() {
+            return replaceHref;
+        }
+
+        public boolean shouldProcessChars() {
+            return processChars;
+        }
     }
 }

@@ -1,5 +1,6 @@
 package com.desktop.services.processors.uniqueizer;
 
+import com.desktop.dto.UniqueizerRequestDTO;
 import com.desktop.services.config.constants.HtmlConstants;
 import com.desktop.services.config.constants.RegexConstants;
 import com.desktop.services.config.constants.UniqueizerConstants;
@@ -24,10 +25,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class UniqueizerProcessor implements IDocumentProcess {
     private static final SecureRandom random = new SecureRandom();
     private final String RANDOM_STRING;
-    private final boolean isSetOffer;
+    private final UniqueizerRequestDTO.ProcessingOptions processingOptions;
 
-    public UniqueizerProcessor(boolean isSetOffer) {
-        this.isSetOffer = isSetOffer;
+    public UniqueizerProcessor(UniqueizerRequestDTO.ProcessingOptions processingOptions) {
+        this.processingOptions = processingOptions;
         RANDOM_STRING = UniqueizerWorker.GetRandomIntegerString(UniqueizerConstants.RANDOM_STRING_LENGTH);
     }
 
@@ -37,7 +38,7 @@ public class UniqueizerProcessor implements IDocumentProcess {
         return processNodesAsync(document, progress)
                 .thenCompose(unused -> processEmptyDivs(document))
                 .thenCompose(unused -> processEmptyScript(document))
-                .thenRun(() -> progress.set(1));
+                .thenRun(() -> progress.set(1.0));
     }
 
     private CompletableFuture<Void> processNodesAsync(Document document, DoubleProperty progress) {
@@ -46,7 +47,7 @@ public class UniqueizerProcessor implements IDocumentProcess {
         return getNodesAmount(document).thenAccept(totalNodes ->
                 document.traverse((node, depth) -> {
                     // (if) Text replacement
-                    if (node instanceof TextNode textNode) {
+                    if (processingOptions.shouldProcessChars() && node instanceof TextNode textNode) {
                         String transformedText = CharSwapper.ConvertChars(textNode.getWholeText());
                         textNode.text(transformedText);
                     } else if (node instanceof Element element) processNodeElement(element);
@@ -89,7 +90,7 @@ public class UniqueizerProcessor implements IDocumentProcess {
         if (element.is(HtmlConstants.INLINE_STYLESHEETS_QUERY))
             processInlineStylesheetColorElement(element);
 
-        if (isSetOffer && element.is(HtmlConstants.ANCHOR_WITH_HREF_QUERY))
+        if (processingOptions.shouldReplaceHref() && element.is(HtmlConstants.ANCHOR_WITH_HREF_QUERY))
             DocumentWorker.SetAttribute(element, "href", "{offer}");
 
         // Adding or replacement unique classes
@@ -196,7 +197,7 @@ public class UniqueizerProcessor implements IDocumentProcess {
     private void incrementTraversedProgress(AtomicInteger processedNodes, int totalNodes, DoubleProperty progress) {
         int completed = processedNodes.incrementAndGet();
         if (completed % 100 != 0 && completed != totalNodes) return;
-        double progressValue = DocumentWorker.GetProgressIncrement(completed, totalNodes);
+        double progressValue = totalNodes > 0 ? DocumentWorker.GetProgressIncrement(completed, totalNodes) : 1.0;
         DocumentWorker.UpdateProgress(progress, progressValue);
     }
 }

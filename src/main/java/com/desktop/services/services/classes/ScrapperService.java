@@ -51,8 +51,7 @@ public class ScrapperService implements IScrapperService {
 
                 return startProcesses(document, path, filesToSaveList, storageWorker)
                         .thenCompose(unused -> {
-                            removeBaseHref(document);
-                            replaceHrefToOffer(document, scrapperRequest.isReplaceSelected());
+                            finalProcess(document, scrapperRequest.getProcessingOptions());
                             return storageWorker.SaveContentAsync(document.outerHtml(), path, ScrapperConstants.HTML_NAME);
                         })
                         .thenApply(finalPath -> new ScrapperResponseDTO(true, path.toAbsolutePath(), "Website has successfully parsed!"))
@@ -74,11 +73,8 @@ public class ScrapperService implements IScrapperService {
                 .thenCompose(unused -> filesProcessor.SaveAsync(filesToSaveList, progress));
     }
 
-    private void removeBaseHref(Document document) {
+    private void finalProcess(Document document, ScrapperRequestDTO.ProcessingOptions processingOptions) {
         document.select("base").remove();
-    }
-
-    private void replaceHrefToOffer(Document document, boolean isSetOffer) {
-        if (isSetOffer) DocumentWorker.ReplaceAnchorHref(document, "{offer}");
+        if (processingOptions.shouldReplaceHref()) DocumentWorker.ReplaceAnchorHref(document, "{offer}");
     }
 }

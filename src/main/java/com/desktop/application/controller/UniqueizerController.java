@@ -52,6 +52,8 @@ public class UniqueizerController {
     private ProgressBar progress_bar;
     @FXML
     private CheckBox replace_to_offer_cbx;
+    @FXML
+    private CheckBox replace_chars_cbx;
 
     @FXML
     private void initialize() {
@@ -112,7 +114,6 @@ public class UniqueizerController {
         String savePath = save_path_tf.getText().trim();
 
         List<File> files = controllerWorker.GetFilesFromString(filePath);
-        boolean isReplaceSelected = replace_to_offer_cbx.isSelected();
 
         if (!validateFields(files, savePath)) return;
 
@@ -121,7 +122,9 @@ public class UniqueizerController {
         IUniqueizerService uniqueizerService = new UniqueizerService();
         initSubmitAction(uniqueizerService);
 
-        CompletableFuture<UniqueizerResponseDTO> future = uniqueizerService.UniqueizeWeb(new UniqueizerRequestDTO(files, saveDir, isReplaceSelected));
+        UniqueizerRequestDTO.ProcessingOptions processingOptions = getProcessingOptions();
+
+        CompletableFuture<UniqueizerResponseDTO> future = uniqueizerService.UniqueizeWeb(new UniqueizerRequestDTO(files, saveDir, processingOptions));
         future.thenAccept(response -> Platform.runLater(() -> {
             List<Path> directories = response.getDirectories();
             String message = response.getMessage();
@@ -132,6 +135,13 @@ public class UniqueizerController {
             Platform.runLater(() -> errorSubmitAction(throwable.getMessage()));
             return null;
         });
+    }
+
+    private UniqueizerRequestDTO.ProcessingOptions getProcessingOptions() {
+        boolean shouldReplaceHref = replace_to_offer_cbx.isSelected();
+        boolean shouldReplaceChars = replace_chars_cbx.isSelected();
+        return new UniqueizerRequestDTO
+                .ProcessingOptions(shouldReplaceHref, shouldReplaceChars);
     }
 
     private boolean validateFields(List<File> files, String savePath) {
