@@ -28,10 +28,6 @@ public class ScrapperApplication extends Application {
         stage.show();
     }
 
-    public static void main(String[] args) {
-        launch();
-    }
-
     public void setStylesheets(Scene scene, String stylesheet) {
         URL cssPath = this.getClass().getResource(ASSETS_DIR + stylesheet);
         if (cssPath != null)
@@ -43,5 +39,13 @@ public class ScrapperApplication extends Application {
         if (faviconPath != null) {
             stage.getIcons().add(new Image(faviconPath.toExternalForm()));
         }
+    }
+
+    public static void main(String[] args) {
+        // for proper font displaying
+        System.setProperty("prism.lcdtext", "false");
+        System.setProperty("prism.text", "t2k");
+
+        launch();
     }
 }
