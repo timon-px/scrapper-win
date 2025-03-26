@@ -1,14 +1,42 @@
 package com.desktop.services.utils;
 
+import com.desktop.dto.ScrapperRequestDTO;
 import com.desktop.services.config.constants.RegexConstants;
 import com.desktop.services.config.constants.ScrapperWorkerConstants;
 import com.desktop.services.config.enums.SaveAsEnum;
+import org.jsoup.Connection;
+import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.net.Proxy;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Duration;
+import java.util.concurrent.CompletableFuture;
 
 public class ScrapperWorker {
+    private static final Logger log = LoggerFactory.getLogger(ScrapperWorker.class);
+
+    public static Document GetDocument(String url) throws IOException {
+        return getJsoupResponse(url).parse();
+    }
+
+    public static Document GetDocument(String url, ScrapperRequestDTO.ProcessingOptions processingOptions) throws IOException {
+        if (processingOptions == null || !processingOptions.shouldProcessSpa()) {
+            return GetDocument(url);
+        }
+
+        String baseUri = getJsoupResponse(url).parse().baseUri();
+        return runWebDriver(url)
+                .thenApply(html -> Jsoup.parse(html, baseUri)).join();
+    }
+
     public static String CleanName(String fileName) {
         int invalidIndex = getInvalidFileNameCharIndex(fileName);
         if (invalidIndex > 0) return fileName.substring(0, invalidIndex);
@@ -58,5 +86,58 @@ public class ScrapperWorker {
         }
 
         return -1;
+    }
+
+    private static Connection getJsoupConnection(String url) {
+        return Jsoup.connect(url);
+    }
+
+    private static Connection.Response getJsoupResponse(String url) throws IOException {
+        return getJsoupConnection(url).execute();
+    }
+
+    private static Connection.Response getJsoupResponse(String url, Proxy proxy) throws IOException {
+        return getJsoupConnection(url).proxy(proxy).execute();
+    }
+
+    private static CompletableFuture<String> runWebDriver(String url) {
+        return CompletableFuture.supplyAsync(() -> {
+            WebDriver driver = new ChromeDriver();
+
+            driver.get(url);
+            driver.manage().window().maximize();
+
+            return waitForDriverToClose(driver).join();
+        });
+    }
+
+    private static CompletableFuture<String> waitForDriverToClose(WebDriver driver) {
+        return CompletableFuture.supplyAsync(() -> {
+            String html = null;
+
+            try {
+                WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
+                wait.until(webDriver -> webDriver.getTitle() != null && !webDriver.getTitle().isEmpty());
+
+                while (true) {
+                    try {
+                        html = driver.getPageSource();
+                        Thread.sleep(Duration.ofMillis(500));
+                    } catch (Exception unused) {
+                        break;
+                    }
+                }
+            } catch (Exception ex) {
+                log.error("Error while processing web driver:\n{}", ex.getMessage());
+            } finally {
+                try {
+                    driver.quit();
+                } catch (Exception e) {
+                    log.error("Error quitting driver, maybe already closed", e);
+                }
+            }
+
+            return html;
+        });
     }
 }
