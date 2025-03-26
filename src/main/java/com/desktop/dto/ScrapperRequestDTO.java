@@ -28,24 +28,19 @@ public class ScrapperRequestDTO {
 
     public static class ProcessingOptions {
         private final boolean replaceHref;
-        private final boolean processSpa;
+        private final boolean processDriver;
 
-        public ProcessingOptions(boolean replaceHref) {
+        public ProcessingOptions(boolean replaceHref, boolean processDriver) {
             this.replaceHref = replaceHref;
-            this.processSpa = false;
-        }
-
-        public ProcessingOptions(boolean replaceHref, boolean processSpa) {
-            this.replaceHref = replaceHref;
-            this.processSpa = processSpa;
+            this.processDriver = processDriver;
         }
 
         public boolean shouldReplaceHref() {
             return replaceHref;
         }
 
-        public boolean shouldProcessSpa() {
-            return processSpa;
+        public boolean shouldProcessDriver() {
+            return processDriver;
         }
     }
 }

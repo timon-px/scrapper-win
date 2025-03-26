@@ -81,9 +81,14 @@ public class HtmlProcessor implements IDocumentProcess {
         if (isBase64(url)) return;
 
         String absoluteUrl = element.absUrl(attr);
-
         FileSaveModel file = FilesWorker.SetFilesToSave(absoluteUrl, filesToSave);
-        element.attr(attr, getPathToSave(file.getUniqueName(), file.getFileType()));
+
+        try {
+            String pathToFile = getPathToSave(file.getUniqueName(), file.getFileType());
+            element.attr(attr, pathToFile);
+        } catch (Exception unused) {
+            filesToSave.remove(absoluteUrl);
+        }
     }
 
     private String resolveAndSaveUrl(Matcher matcher, String documentUrl) {
@@ -93,8 +98,13 @@ public class HtmlProcessor implements IDocumentProcess {
         String absoluteUrl = ScrapperWorker.ResolveAbsoluteUrl(documentUrl, url);
         FileSaveModel fileSave = FilesWorker.SetFilesToSave(absoluteUrl, filesToSave);
 
-        return matcher.group()
-                .replace(url, getPathToSave(fileSave.getUniqueName(), fileSave.getFileType()));
+        try {
+            String pathToFile = getPathToSave(fileSave.getUniqueName(), fileSave.getFileType());
+            return matcher.group().replace(url, pathToFile);
+        } catch (Exception unused) {
+            filesToSave.remove(absoluteUrl);
+            return matcher.group();
+        }
     }
 
     private String getPathToSave(String fileName, SaveAsEnum saveAs) {

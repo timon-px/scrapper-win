@@ -4,6 +4,7 @@ import com.desktop.dto.ScrapperRequestDTO;
 import com.desktop.services.config.constants.RegexConstants;
 import com.desktop.services.config.constants.ScrapperWorkerConstants;
 import com.desktop.services.config.enums.SaveAsEnum;
+import com.google.common.base.Strings;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -28,13 +29,17 @@ public class ScrapperWorker {
     }
 
     public static Document GetDocument(String url, ScrapperRequestDTO.ProcessingOptions processingOptions) throws IOException {
-        if (processingOptions == null || !processingOptions.shouldProcessSpa()) {
+        if (processingOptions == null || !processingOptions.shouldProcessDriver()) {
             return GetDocument(url);
         }
 
         String baseUri = getJsoupResponse(url).parse().baseUri();
-        return runWebDriver(url)
-                .thenApply(html -> Jsoup.parse(html, baseUri)).join();
+        String html = runWebDriver(url).join();
+
+        if (Strings.isNullOrEmpty(html))
+            throw new RuntimeException("Please try again");
+
+        return Jsoup.parse(html, baseUri);
     }
 
     public static String CleanName(String fileName) {
@@ -102,13 +107,16 @@ public class ScrapperWorker {
 
     private static CompletableFuture<String> runWebDriver(String url) {
         return CompletableFuture.supplyAsync(() -> {
-            WebDriver driver = new ChromeDriver();
+                    WebDriver driver = new ChromeDriver();
 
-            driver.get(url);
-            driver.manage().window().maximize();
+                    driver.get(url);
+                    driver.manage().window().maximize();
 
-            return waitForDriverToClose(driver).join();
-        });
+                    return driver;
+                }).thenCompose(ScrapperWorker::waitForDriverToClose)
+                .exceptionally(throwable -> {
+                    throw new RuntimeException("Error during initial web driver");
+                });
     }
 
     private static CompletableFuture<String> waitForDriverToClose(WebDriver driver) {
@@ -128,7 +136,7 @@ public class ScrapperWorker {
                     }
                 }
             } catch (Exception ex) {
-                log.error("Error while processing web driver:\n{}", ex.getMessage());
+                log.error("Error while processing web driver: {}", ex.getMessage());
             } finally {
                 try {
                     driver.quit();
@@ -137,7 +145,7 @@ public class ScrapperWorker {
                 }
             }
 
-            return html;
+            return Strings.nullToEmpty(html);
         });
     }
 }
