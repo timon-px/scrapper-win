@@ -32,7 +32,7 @@ public class ScrapperRequestDTO {
 
         public ProcessingOptions(boolean replaceHref) {
             this.replaceHref = replaceHref;
-            this.processSpa = true;
+            this.processSpa = false;
         }
 
         public ProcessingOptions(boolean replaceHref, boolean processSpa) {

@@ -41,7 +41,7 @@ public class UniqueizerService implements IUniqueizerService {
 
         if (files.isEmpty()) {
             return CompletableFuture.completedFuture(
-                    new UniqueizerResponseDTO(false, Collections.emptyList(), "No valid files provided")
+                    new UniqueizerResponseDTO(false, "No valid files provided")
             );
         }
 

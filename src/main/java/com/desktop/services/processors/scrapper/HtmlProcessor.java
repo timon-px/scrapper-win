@@ -43,7 +43,7 @@ public class HtmlProcessor implements IDocumentProcess {
         futures.addAll(processElementsAsync(scriptFiles, this::processScriptAttr));
 
         return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
-                .thenRun(() -> DocumentWorker.UpdateProgress(progress, 0.05));
+                .thenRun(() -> DocumentWorker.IncrementProgress(progress, 0.1));
     }
 
     private List<CompletableFuture<Void>> processElementsAsync(Elements elements, Consumer<Element> processor) {

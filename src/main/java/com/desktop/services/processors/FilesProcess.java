@@ -1,5 +1,6 @@
 package com.desktop.services.processors;
 
+import com.desktop.services.config.constants.ScrapperConstants;
 import com.desktop.services.models.FileSaveModel;
 import com.desktop.services.processors.interfaces.IFilesProcess;
 import com.desktop.services.storage.IStorageWorker;
@@ -13,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class FilesProcess implements IFilesProcess {
     private static final Logger log = LoggerFactory.getLogger(FilesProcess.class);
@@ -49,11 +50,11 @@ public class FilesProcess implements IFilesProcess {
                 });
     }
 
-    private List<CompletableFuture<String>> initAsyncDownloads(ConcurrentHashMap<String, FileSaveModel> filesToSave, DoubleProperty progress, double baseProgress) {
+    private List<CompletableFuture<String>> initAsyncDownloads(ConcurrentHashMap<String, FileSaveModel> filesToSave, DoubleProperty progress, double initialProgress) {
         int totalFiles = filesToSave.size();
-        AtomicInteger completedFiles = new AtomicInteger(0);
+        var progressValue = new AtomicReference<>(initialProgress);
+        double progressStep = (ScrapperConstants.MAX_FILE_PROGRESS - initialProgress) / totalFiles;
 
-        double downloadWeight = 1 - baseProgress;
         List<CompletableFuture<String>> downloadFutures = new ArrayList<>();
 
         // Iterate over the map and start async downloads
@@ -63,9 +64,8 @@ public class FilesProcess implements IFilesProcess {
 
             CompletableFuture<String> future = storageWorker.SaveFileAsync(url, fileModel, mainPath);
             future.thenRun(() -> {
-                int completed = completedFiles.incrementAndGet();
-                double fileProgress = DocumentWorker.GetProgressIncrement(completed, totalFiles * downloadWeight);
-                DocumentWorker.UpdateProgress(progress, fileProgress + baseProgress);
+                double newProgress = progressValue.updateAndGet(pr -> pr + progressStep);
+                DocumentWorker.UpdateProgress(progress, newProgress);
             }).exceptionally(throwable -> {
                 log.error("Download failed: {}", throwable.getMessage());
                 return null;

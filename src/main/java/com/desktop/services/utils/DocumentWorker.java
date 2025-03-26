@@ -74,16 +74,20 @@ public class DocumentWorker {
         links.attr("href", replaceWith);
     }
 
-    public static void UpdateProgress(DoubleProperty progress, double addValue) {
-        UpdateProgress(progress, addValue, 1.0);
+    public static void IncrementProgress(DoubleProperty progress, double addValue) {
+        UpdateProgress(progress, progress.get() + addValue, 1.0);
     }
 
-    public static void UpdateProgress(DoubleProperty progress, double addValue, double maxValue) {
-        Platform.runLater(() -> progress.set(Math.min(addValue, maxValue)));
+    public static void UpdateProgress(DoubleProperty progress, double newValue) {
+        UpdateProgress(progress, newValue, 1.0);
     }
 
-    public static double GetProgressIncrement(double maxProgress, double countProcesses) {
-        return maxProgress / countProcesses;
+    public static void UpdateProgress(DoubleProperty progress, double newValue, double maxValue) {
+        Platform.runLater(() -> progress.set(Math.min(newValue, maxValue)));
+    }
+
+    public static double GetProgressIncrement(double completed, double overall) {
+        return completed / overall;
     }
 
     private static void addAllowedFile(Elements elementsTo, Element check, String attr) {
