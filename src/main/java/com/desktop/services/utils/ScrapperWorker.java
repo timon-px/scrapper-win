@@ -4,13 +4,10 @@ import com.desktop.dto.ScrapperRequestDTO;
 import com.desktop.services.config.constants.RegexConstants;
 import com.desktop.services.config.constants.ScrapperWorkerConstants;
 import com.desktop.services.config.enums.SaveAsEnum;
-import com.google.common.base.Strings;
+import com.desktop.services.driver.ScrapperDriver;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,8 +15,7 @@ import java.io.IOException;
 import java.net.Proxy;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.time.Duration;
-import java.util.concurrent.CompletableFuture;
+import java.util.List;
 
 public class ScrapperWorker {
     private static final Logger log = LoggerFactory.getLogger(ScrapperWorker.class);
@@ -33,13 +29,16 @@ public class ScrapperWorker {
             return GetDocument(url);
         }
 
-        String baseUri = getJsoupResponse(url).parse().baseUri();
-        String html = runWebDriver(url).join();
+        ScrapperDriver scrapperDriver = new ScrapperDriver(url);
 
-        if (Strings.isNullOrEmpty(html))
+        String identifier = UniqueizerWorker.GetRandomCharStringWithPrefix(12);
+        String baseUri = getJsoupResponse(url).parse().baseUri();
+        List<String> htmlList = scrapperDriver.RunWebDriver(identifier).join();
+
+        if (htmlList.isEmpty())
             throw new RuntimeException("Please try again");
 
-        return Jsoup.parse(html, baseUri);
+        return getCleanDriverDocument(htmlList.getFirst(), baseUri, identifier);
     }
 
     public static String CleanName(String fileName) {
@@ -105,47 +104,11 @@ public class ScrapperWorker {
         return getJsoupConnection(url).proxy(proxy).execute();
     }
 
-    private static CompletableFuture<String> runWebDriver(String url) {
-        return CompletableFuture.supplyAsync(() -> {
-                    WebDriver driver = new ChromeDriver();
+    private static Document getCleanDriverDocument(String html, String baseUri, String identifier) {
+        String captureButtonSelector = String.format("*[data-%s]", identifier);
 
-                    driver.get(url);
-                    driver.manage().window().maximize();
-
-                    return driver;
-                }).thenCompose(ScrapperWorker::waitForDriverToClose)
-                .exceptionally(throwable -> {
-                    throw new RuntimeException("Error during initial web driver");
-                });
-    }
-
-    private static CompletableFuture<String> waitForDriverToClose(WebDriver driver) {
-        return CompletableFuture.supplyAsync(() -> {
-            String html = null;
-
-            try {
-                WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
-                wait.until(webDriver -> webDriver.getTitle() != null && !webDriver.getTitle().isEmpty());
-
-                while (true) {
-                    try {
-                        html = driver.getPageSource();
-                        Thread.sleep(Duration.ofMillis(500));
-                    } catch (Exception unused) {
-                        break;
-                    }
-                }
-            } catch (Exception ex) {
-                log.error("Error while processing web driver: {}", ex.getMessage());
-            } finally {
-                try {
-                    driver.quit();
-                } catch (Exception e) {
-                    log.error("Error quitting driver, maybe already closed", e);
-                }
-            }
-
-            return Strings.nullToEmpty(html);
-        });
+        Document document = Jsoup.parse(html, baseUri);
+        document.select(captureButtonSelector).remove();
+        return document;
     }
 }
