@@ -103,7 +103,7 @@ public class ScrapperController {
         boolean shouldReplaceHref = replace_to_offer_cbx.isSelected();
         boolean shouldProcessDriver = process_driver_cbx.isSelected();
         return new ScrapperRequestDTO
-                .ProcessingOptions(shouldReplaceHref, shouldProcessDriver);
+                .ProcessingOptions(shouldReplaceHref, shouldProcessDriver, true);
     }
 
     private boolean validateFields(String dirPath, String webUrl) {

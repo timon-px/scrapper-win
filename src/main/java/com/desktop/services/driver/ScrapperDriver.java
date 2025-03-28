@@ -1,19 +1,16 @@
 package com.desktop.services.driver;
 
+import com.desktop.services.models.DriverSaveModel;
 import com.desktop.services.utils.UniqueizerWorker;
 import com.google.common.base.Strings;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.NoSuchSessionException;
-import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -30,14 +27,14 @@ public class ScrapperDriver {
         this.url = Objects.requireNonNull(url, "URL must not be null");
     }
 
-    public CompletableFuture<List<String>> RunWebDriver() {
-        return RunWebDriver(UniqueizerWorker.GetRandomCharString(12));
+    public CompletableFuture<List<DriverSaveModel>> RunWebDriver() {
+        return RunWebDriver(UniqueizerWorker.GetRandomCharString(12), false);
     }
 
-    public CompletableFuture<List<String>> RunWebDriver(String identifier) {
+    public CompletableFuture<List<DriverSaveModel>> RunWebDriver(String identifier, boolean shouldProcessStyles) {
         Objects.requireNonNull(identifier, "Identifier must not be null");
         return CompletableFuture.supplyAsync(this::initializeDriver, EXECUTOR)
-                .thenCompose(driver -> waitForDriverToClose(driver, identifier))
+                .thenCompose(driver -> waitForDriverToClose(driver, identifier, shouldProcessStyles))
                 .exceptionally(throwable -> {
                     log.error("Error during web driver execution", throwable);
                     throw new RuntimeException("Web driver execution failed", throwable);
@@ -55,24 +52,28 @@ public class ScrapperDriver {
         }
     }
 
-    private CompletableFuture<List<String>> waitForDriverToClose(WebDriver driver, String identifier) {
+    private CompletableFuture<List<DriverSaveModel>> waitForDriverToClose(WebDriver driver,
+                                                                          String identifier,
+                                                                          boolean shouldProcessStyles) {
         return CompletableFuture.supplyAsync(() -> {
+            CapturePageWorker capturePageWorker = new CapturePageWorker(shouldProcessStyles);
             JavascriptExecutor js = (JavascriptExecutor) driver;
-            List<String> htmlList = new ArrayList<>();
+            JavaScriptDriver javaScriptDriver = null;
             String lastHtml = null;
 
             try {
                 waitForInitialLoad(driver);
-                JavaScriptDriver javaScriptDriver = new JavaScriptDriver(js, identifier);
+                javaScriptDriver = new JavaScriptDriver(js, identifier);
                 javaScriptDriver.Execute();
 
                 while (true) {
                     try {
                         lastHtml = driver.getPageSource();
                         if (javaScriptDriver.IsReadyToSave()) {
-                            htmlList.add(lastHtml);
+                            capturePageWorker.CapturePage(lastHtml, javaScriptDriver);
                             javaScriptDriver.SetSavedHtml();
                         }
+
                         Thread.sleep(POLL_INTERVAL);
                     } catch (NoSuchSessionException e) {
                         log.info("Browser closed by user, stopping polling");
@@ -90,12 +91,11 @@ public class ScrapperDriver {
                 log.error("Processing error", e);
             } finally {
                 lastHtml = captureFinalHtml(driver, lastHtml);
-                if (htmlList.isEmpty() && !Strings.isNullOrEmpty(lastHtml))
-                    htmlList.add(lastHtml);
+                capturePageWorker.CaptureFinalPage(lastHtml, javaScriptDriver);
                 closeDriver(driver);
             }
 
-            return htmlList;
+            return capturePageWorker.GetSaveModelList();
         }, EXECUTOR);
     }
 

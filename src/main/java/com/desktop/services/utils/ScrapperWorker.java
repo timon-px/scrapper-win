@@ -5,6 +5,7 @@ import com.desktop.services.config.constants.RegexConstants;
 import com.desktop.services.config.constants.ScrapperWorkerConstants;
 import com.desktop.services.config.enums.SaveAsEnum;
 import com.desktop.services.driver.ScrapperDriver;
+import com.desktop.services.models.DriverSaveModel;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -30,15 +31,19 @@ public class ScrapperWorker {
         }
 
         ScrapperDriver scrapperDriver = new ScrapperDriver(url);
+        boolean shouldProcessStyles = processingOptions.shouldProcessDriverCustomStyles();
 
         String identifier = UniqueizerWorker.GetRandomCharStringWithPrefix(12);
         String baseUri = getJsoupResponse(url).parse().baseUri();
-        List<String> htmlList = scrapperDriver.RunWebDriver(identifier).join();
+        List<DriverSaveModel> driverSaveModels = scrapperDriver
+                .RunWebDriver(identifier, shouldProcessStyles)
+                .join();
 
-        if (htmlList.isEmpty())
+        DriverSaveModel driverSaveModel = driverSaveModels.getFirst();
+        if (driverSaveModels.isEmpty())
             throw new RuntimeException("Please try again");
 
-        return getCleanDriverDocument(htmlList.getFirst(), baseUri, identifier);
+        return getDriverDocument(driverSaveModel, baseUri, identifier, shouldProcessStyles);
     }
 
     public static String CleanName(String fileName) {
@@ -104,11 +109,28 @@ public class ScrapperWorker {
         return getJsoupConnection(url).proxy(proxy).execute();
     }
 
+    private static Document getDriverDocument(DriverSaveModel driverSaveModel,
+                                              String baseUri,
+                                              String identifier,
+                                              boolean shouldProcessDriverCustomStyles) {
+        Document cleanDocument = getCleanDriverDocument(driverSaveModel.getHtml(), baseUri, identifier);
+        if (!shouldProcessDriverCustomStyles) return cleanDocument;
+
+        return setCutomStyleDocument(cleanDocument, driverSaveModel);
+    }
+
     private static Document getCleanDriverDocument(String html, String baseUri, String identifier) {
         String captureButtonSelector = String.format("*[data-%s]", identifier);
 
         Document document = Jsoup.parse(html, baseUri);
         document.select(captureButtonSelector).remove();
         return document;
+    }
+
+    private static Document setCutomStyleDocument(Document document, DriverSaveModel driverSaveModel) {
+        if (driverSaveModel.getStyle() == null) return document;
+        document.select("style").remove();
+        document.select(".hide-when-no-script").remove();
+        return DocumentWorker.AppendStyleBlock(document, driverSaveModel.getStyle());
     }
 }

@@ -108,3 +108,23 @@ captureButton.addEventListener('click', () => {
         setReadyStyle();
     }
 });
+
+window.getAllStyles = () => {
+    let styles = '';
+
+    // Get styles from all stylesheets
+    for (let i = 0; i < document.styleSheets.length; i++) {
+        let sheet = document.styleSheets[i];
+
+        try {
+            let rules = sheet.cssRules || sheet.rules;
+            for (let j = 0; j < rules.length; j++) {
+                styles += rules[j].cssText + '\n';
+            }
+        } catch (e) {
+            console.warn('Could not access stylesheet: ', sheet.href);
+        }
+    }
+
+    return styles;
+}

@@ -61,6 +61,13 @@ public class DocumentWorker {
         return document.select(HtmlConstants.EXTERNAL_SCRIPTS_QUERY);
     }
 
+    public static Document AppendStyleBlock(Document document, String css) {
+        Element styleNode = document.createElement("style");
+        styleNode.append(css);
+        document.head().appendChild(styleNode);
+        return document;
+    }
+
     public static void SetAttribute(Element element, String attr, String value) {
         element.attr(attr, value);
     }
@@ -72,6 +79,7 @@ public class DocumentWorker {
     public static void ReplaceAnchorHref(Document document, String replaceWith) {
         Elements links = document.select(HtmlConstants.ANCHOR_WITH_HREF_QUERY);
         links.attr("href", replaceWith);
+        links.removeAttr("target");
     }
 
     public static void IncrementProgress(DoubleProperty progress, double addValue) {

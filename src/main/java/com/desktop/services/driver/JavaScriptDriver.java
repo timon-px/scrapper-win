@@ -34,6 +34,13 @@ public class JavaScriptDriver {
     }
 
     public void SetSavedHtml() {
-        js.executeScript("setSavedHtml();");
+        js.executeScript("window.setSavedHtml();");
+    }
+
+    public String GetAllDocumentStyles() {
+        Object allStylesObject = js.executeScript("return window.getAllStyles();");
+        if (allStylesObject instanceof String) return (String) allStylesObject;
+
+        throw new IllegalAccessError("All styles object is not a string");
     }
 }
