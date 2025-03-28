@@ -99,7 +99,8 @@ public class UniqueizerProcessor implements IDocumentProcess {
     }
 
     private void processDataTag(Element element) {
-        if (element.firstChild() instanceof TextNode) return;
+        removeExistingDataTag(element);
+
         int randomId = random.nextInt(UniqueizerConstants.DATA_ATTRS.size());
         String randomDataAttr = UniqueizerConstants.DATA_ATTRS.get(randomId);
 
@@ -192,6 +193,12 @@ public class UniqueizerProcessor implements IDocumentProcess {
 
     private void replaceRandomAttribute(Element tag, String attr) {
         DocumentWorker.ReplaceAttribute(tag, attr, RANDOM_STRING);
+    }
+
+    private void removeExistingDataTag(Element element) {
+        for (String attr : UniqueizerConstants.DATA_ATTRS) {
+            if (element.hasAttr(attr)) element.removeAttr(attr);
+        }
     }
 
     private void incrementTraversedProgress(AtomicInteger processedNodes, int totalNodes, DoubleProperty progress) {
