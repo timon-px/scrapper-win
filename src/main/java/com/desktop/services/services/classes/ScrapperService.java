@@ -55,7 +55,8 @@ public class ScrapperService implements IScrapperService {
     private boolean validateRequest(ScrapperRequestDTO request) {
         return request != null &&
                 request.getUrl() != null && !request.getUrl().isEmpty() &&
-                request.getDirectory() != null && request.getDirectory().toFile().exists() && request.getDirectory().toFile().isDirectory();
+                request.getDirectory() != null && request.getDirectory().toFile().exists() &&
+                request.getDirectory().toFile().isDirectory();
     }
 
     // Main async processing

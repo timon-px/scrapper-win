@@ -45,7 +45,7 @@ public class UniqueizerService implements IUniqueizerService {
             );
         }
 
-        return processFilesAsync(files, uniqueizerRequest.getProcessingOptions(), storageWorker);
+        return processFiles(files, uniqueizerRequest.getProcessingOptions(), storageWorker);
     }
 
     // Input validation
@@ -62,9 +62,9 @@ public class UniqueizerService implements IUniqueizerService {
     }
 
     // Main processing orchestration
-    private CompletableFuture<UniqueizerResponseDTO> processFilesAsync(List<File> files,
-                                                                       UniqueizerRequestDTO.ProcessingOptions processingOptions,
-                                                                       IStorageWorker storageWorker) {
+    private CompletableFuture<UniqueizerResponseDTO> processFiles(List<File> files,
+                                                                  UniqueizerRequestDTO.ProcessingOptions processingOptions,
+                                                                  IStorageWorker storageWorker) {
         ExecutorService executor = Executors.newFixedThreadPool(
                 Math.min(files.size(), Runtime.getRuntime().availableProcessors())
         );
