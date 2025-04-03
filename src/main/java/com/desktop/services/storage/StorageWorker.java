@@ -114,7 +114,7 @@ public class StorageWorker implements IStorageWorker {
 
     private synchronized void createDirectoriesIfNotExists(Path path) {
         try {
-            if (!Files.exists(path)) {
+            if (!Files.exists(path) || !Files.isDirectory(path)) {
                 Files.createDirectories(path);
             }
         } catch (IOException e) {

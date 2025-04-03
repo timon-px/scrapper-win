@@ -28,13 +28,25 @@ public class ScrapperRequestDTO {
 
     public static class ProcessingOptions {
         private final boolean replaceHref;
+        private final boolean processDriver;
+        private final boolean processDriverCustomStyles;
 
-        public ProcessingOptions(boolean replaceHref) {
+        public ProcessingOptions(boolean replaceHref, boolean processDriver, boolean processDriverCustomStyles) {
             this.replaceHref = replaceHref;
+            this.processDriver = processDriver;
+            this.processDriverCustomStyles = processDriverCustomStyles;
         }
 
         public boolean shouldReplaceHref() {
             return replaceHref;
+        }
+
+        public boolean shouldProcessDriver() {
+            return processDriver;
+        }
+
+        public boolean shouldProcessDriverCustomStyles() {
+            return processDriverCustomStyles;
         }
     }
 }

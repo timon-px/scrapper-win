@@ -41,11 +41,11 @@ public class UniqueizerService implements IUniqueizerService {
 
         if (files.isEmpty()) {
             return CompletableFuture.completedFuture(
-                    new UniqueizerResponseDTO(false, Collections.emptyList(), "No valid files provided")
+                    new UniqueizerResponseDTO(false, "No valid files provided")
             );
         }
 
-        return processFilesAsync(files, uniqueizerRequest.getProcessingOptions(), storageWorker);
+        return processFiles(files, uniqueizerRequest.getProcessingOptions(), storageWorker);
     }
 
     // Input validation
@@ -62,9 +62,9 @@ public class UniqueizerService implements IUniqueizerService {
     }
 
     // Main processing orchestration
-    private CompletableFuture<UniqueizerResponseDTO> processFilesAsync(List<File> files,
-                                                                       UniqueizerRequestDTO.ProcessingOptions processingOptions,
-                                                                       IStorageWorker storageWorker) {
+    private CompletableFuture<UniqueizerResponseDTO> processFiles(List<File> files,
+                                                                  UniqueizerRequestDTO.ProcessingOptions processingOptions,
+                                                                  IStorageWorker storageWorker) {
         ExecutorService executor = Executors.newFixedThreadPool(
                 Math.min(files.size(), Runtime.getRuntime().availableProcessors())
         );

@@ -55,7 +55,7 @@ public class StylesheetProcessor implements IDocumentProcess {
         futures.add(processExternalStylesAsync(styles));
 
         return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
-                .thenRun(() -> DocumentWorker.UpdateProgress(progress, 0.05));
+                .thenRun(() -> DocumentWorker.IncrementProgress(progress, 0.1));
     }
 
     private CompletableFuture<Void> processBlockStylesAsync(Elements styles, String documentUrl) {

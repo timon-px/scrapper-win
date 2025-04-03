@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Scrapper"
-#define MyAppVersion "1.3"
+#define MyAppVersion "1.4"
 #define MyAppPublisher "TimonPX"
 #define MyAppExeName "scrapper.exe"
 
@@ -45,6 +45,10 @@ Source: "C:\Users\win10\Desktop\scrapper-main\app-bundle\scrapper\{#MyAppExeName
 Source: "C:\Users\win10\Desktop\scrapper-main\app-bundle\scrapper\app\*"; DestDir: "{app}\app"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "C:\Users\win10\Desktop\scrapper-main\app-bundle\scrapper\runtime\*"; DestDir: "{app}\runtime"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
+
+; NOTE: Removes all files before updating
+[InstallDelete]
+Type: filesandordirs; Name: "{app}\*"
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"

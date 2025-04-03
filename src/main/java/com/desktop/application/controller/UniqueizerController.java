@@ -57,7 +57,7 @@ public class UniqueizerController {
 
     @FXML
     private void initialize() {
-        disableNodes = List.of(browse_file_btn, browse_save_btn, submit_btn, file_path_tf, save_path_tf, replace_to_offer_cbx);
+        disableNodes = List.of(browse_file_btn, browse_save_btn, submit_btn, file_path_tf, save_path_tf, replace_to_offer_cbx, replace_chars_cbx);
 
         progressBarInit(progress_bar);
         submitBtnInit(submit_btn);
@@ -129,12 +129,11 @@ public class UniqueizerController {
             List<Path> directories = response.getDirectories();
             String message = response.getMessage();
 
-            if (!directories.isEmpty())
+            if (!directories.isEmpty() && response.isSuccess())
                 successSubmitAction(directories.getFirst(), message);
-        })).exceptionally(throwable -> {
-            Platform.runLater(() -> errorSubmitAction(throwable.getMessage()));
-            return null;
-        });
+            else
+                errorPlatformRun(new Throwable(message));
+        })).exceptionally(this::errorPlatformRun);
     }
 
     private UniqueizerRequestDTO.ProcessingOptions getProcessingOptions() {
@@ -175,6 +174,11 @@ public class UniqueizerController {
         controllerWorker.SetLoading(false, disableNodes, progress_bar);
         progress_bar.progressProperty().unbind(); // Unbind when done
         controllerWorker.ShowAllert(Alert.AlertType.ERROR, "Error!", "Something went wrong!", responseMessage);
+    }
+
+    private Void errorPlatformRun(Throwable throwable) {
+        Platform.runLater(() -> errorSubmitAction(throwable.getMessage()));
+        return null;
     }
 
     private List<String> getFilesValidation(List<File> files) {

@@ -45,10 +45,12 @@ public class ScrapperController {
     private ProgressBar progress_bar;
     @FXML
     private CheckBox replace_to_offer_cbx;
+    @FXML
+    private CheckBox process_driver_cbx;
 
     @FXML
     private void initialize() {
-        disableNodes = List.of(browse_btn, submit_btn, dir_path_tf, web_url_tf, replace_to_offer_cbx);
+        disableNodes = List.of(browse_btn, submit_btn, dir_path_tf, web_url_tf, replace_to_offer_cbx, process_driver_cbx);
 
         dirPathTfInit(dir_path_tf);
         browseBtnInit(browse_btn);
@@ -90,17 +92,18 @@ public class ScrapperController {
             Path directory = response.getDirectory();
             String message = response.getMessage();
 
-            successSubmitAction(directory, message);
-        })).exceptionally(throwable -> {
-            Platform.runLater(() -> errorSubmitAction(throwable.getMessage()));
-            return null;
-        });
+            if (response.isSuccess())
+                successSubmitAction(directory, message);
+            else
+                errorPlatformRun(new Throwable(message));
+        })).exceptionally(this::errorPlatformRun);
     }
 
     private ScrapperRequestDTO.ProcessingOptions getProcessingOptions() {
         boolean shouldReplaceHref = replace_to_offer_cbx.isSelected();
+        boolean shouldProcessDriver = process_driver_cbx.isSelected();
         return new ScrapperRequestDTO
-                .ProcessingOptions(shouldReplaceHref);
+                .ProcessingOptions(shouldReplaceHref, shouldProcessDriver, false);
     }
 
     private boolean validateFields(String dirPath, String webUrl) {
@@ -131,5 +134,10 @@ public class ScrapperController {
         controllerWorker.SetLoading(false, disableNodes, progress_bar);
         progress_bar.progressProperty().unbind(); // Unbind when done
         controllerWorker.ShowAllert(Alert.AlertType.ERROR, "Error!", "Something went wrong!", responseMessage);
+    }
+
+    private Void errorPlatformRun(Throwable throwable) {
+        Platform.runLater(() -> errorSubmitAction(throwable.getMessage()));
+        return null;
     }
 }

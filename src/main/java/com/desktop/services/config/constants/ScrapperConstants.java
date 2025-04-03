@@ -9,4 +9,6 @@ public class ScrapperConstants {
     public static final String FONT_FOLDER = "fonts";
 
     public static final String HTML_NAME = "index.html";
+
+    public static final double MAX_FILE_PROGRESS = 0.95;
 }

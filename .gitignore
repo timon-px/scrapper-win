@@ -5,6 +5,8 @@ dist/
 custom-runtime/
 app-bundle/
 inno-setup/
+src/main/resources/driver/capture-extension/
+
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/

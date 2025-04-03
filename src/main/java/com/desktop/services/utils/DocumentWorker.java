@@ -61,6 +61,13 @@ public class DocumentWorker {
         return document.select(HtmlConstants.EXTERNAL_SCRIPTS_QUERY);
     }
 
+    public static Document AppendStyleBlock(Document document, String css) {
+        Element styleNode = document.createElement("style");
+        styleNode.append(css);
+        document.head().appendChild(styleNode);
+        return document;
+    }
+
     public static void SetAttribute(Element element, String attr, String value) {
         element.attr(attr, value);
     }
@@ -72,18 +79,23 @@ public class DocumentWorker {
     public static void ReplaceAnchorHref(Document document, String replaceWith) {
         Elements links = document.select(HtmlConstants.ANCHOR_WITH_HREF_QUERY);
         links.attr("href", replaceWith);
+        links.removeAttr("target");
     }
 
-    public static void UpdateProgress(DoubleProperty progress, double addValue) {
-        UpdateProgress(progress, addValue, 1.0);
+    public static void IncrementProgress(DoubleProperty progress, double addValue) {
+        UpdateProgress(progress, progress.get() + addValue, 1.0);
     }
 
-    public static void UpdateProgress(DoubleProperty progress, double addValue, double maxValue) {
-        Platform.runLater(() -> progress.set(Math.min(addValue, maxValue)));
+    public static void UpdateProgress(DoubleProperty progress, double newValue) {
+        UpdateProgress(progress, newValue, 1.0);
     }
 
-    public static double GetProgressIncrement(double maxProgress, double countProcesses) {
-        return maxProgress / countProcesses;
+    public static void UpdateProgress(DoubleProperty progress, double newValue, double maxValue) {
+        Platform.runLater(() -> progress.set(Math.min(newValue, maxValue)));
+    }
+
+    public static double GetProgressIncrement(double completed, double overall) {
+        return completed / overall;
     }
 
     private static void addAllowedFile(Elements elementsTo, Element check, String attr) {
