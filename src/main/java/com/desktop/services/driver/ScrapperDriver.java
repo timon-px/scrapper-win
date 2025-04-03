@@ -1,16 +1,20 @@
 package com.desktop.services.driver;
 
+import com.desktop.services.config.constants.DriverConstants;
 import com.desktop.services.models.DriverSaveModel;
-import com.desktop.services.utils.UniqueizerWorker;
+import com.desktop.services.utils.FilesWorker;
 import com.google.common.base.Strings;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.NoSuchSessionException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.net.URL;
 import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
@@ -31,75 +35,84 @@ public class ScrapperDriver {
     }
 
     public CompletableFuture<List<DriverSaveModel>> RunWebDriver() {
-        return RunWebDriver(UniqueizerWorker.GetRandomCharString(12), false);
+        return RunWebDriver(false);
     }
 
-    public CompletableFuture<List<DriverSaveModel>> RunWebDriver(String identifier, boolean shouldProcessStyles) {
-        Objects.requireNonNull(identifier, "Identifier must not be null");
+    public CompletableFuture<List<DriverSaveModel>> RunWebDriver(boolean shouldProcessStyles) {
         return CompletableFuture.supplyAsync(this::initializeDriver, EXECUTOR)
-                .thenCompose(driver -> waitForDriverToClose(driver, identifier, shouldProcessStyles))
+                .thenCompose(driver -> waitForDriverToClose(driver, shouldProcessStyles))
                 .exceptionally(throwable -> {
                     log.error("Error during web driver execution", throwable);
                     throw new RuntimeException("Web driver execution failed", throwable);
                 });
     }
 
-    private WebDriver initializeDriver() {
+    private DriverWithProfile initializeDriver() {
         try {
-            WebDriver driver = new ChromeDriver();
+            ChromeOptions options = JavaScriptDriver.GetChromeOptions();
+
+            TempProfileManager profileManager = new TempProfileManager(getProfilePath());
+            profileManager.applyToOptions(options);
+
+            WebDriver driver = new ChromeDriver(options);
             driver.get(url);
             driver.manage().window().maximize();
-            return driver;
+
+            return new DriverWithProfile(driver, profileManager);
         } catch (Exception e) {
             throw new RuntimeException("Failed to initialize WebDriver", e);
         }
     }
 
-    private CompletableFuture<List<DriverSaveModel>> waitForDriverToClose(WebDriver driver,
-                                                                          String identifier,
+    private CompletableFuture<List<DriverSaveModel>> waitForDriverToClose(DriverWithProfile driverWithProfile,
                                                                           boolean shouldProcessStyles) {
         return CompletableFuture.supplyAsync(() -> {
+            WebDriver driver = driverWithProfile.getDriver();
+
             CapturePageWorker capturePageWorker = new CapturePageWorker(shouldProcessStyles);
             JavascriptExecutor js = (JavascriptExecutor) driver;
-            JavaScriptDriver javaScriptDriver = null;
-            String lastHtml = null;
+            JavaScriptDriver javaScriptDriver = new JavaScriptDriver(js);
 
             try {
                 waitForInitialLoad(driver);
-                javaScriptDriver = new JavaScriptDriver(js, identifier);
-                javaScriptDriver.Execute();
-
-                while (true) {
-                    try {
-                        lastHtml = driver.getPageSource();
-                        if (javaScriptDriver.IsReadyToSave()) {
-                            capturePageWorker.CapturePage(lastHtml, javaScriptDriver);
-                            javaScriptDriver.SetSavedHtml();
-                        }
-
-                        Thread.sleep(POLL_INTERVAL);
-                    } catch (NoSuchSessionException e) {
-                        log.info("Browser closed by user, stopping polling");
-                        break;
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        log.warn("Polling interrupted", e);
-                        break;
-                    } catch (Exception e) {
-                        log.error("Polling error", e);
-                        break;
-                    }
-                }
+                pollAndCapture(driver, javaScriptDriver, capturePageWorker);
             } catch (Exception e) {
                 log.error("Processing error", e);
             } finally {
-                lastHtml = captureFinalHtml(driver, lastHtml);
-                capturePageWorker.CaptureFinalPage(lastHtml, javaScriptDriver);
-                closeDriver(driver);
+                closeDriver(driverWithProfile);
             }
 
             return capturePageWorker.GetSaveModelList();
         }, EXECUTOR);
+    }
+
+    private void pollAndCapture(WebDriver driver,
+                                JavaScriptDriver javaScriptDriver,
+                                CapturePageWorker capturePageWorker) {
+        String lastHtml = null;
+        while (true) {
+            try {
+                lastHtml = driver.getPageSource();
+
+                if (javaScriptDriver.IsReadyToSave()) {
+                    capturePageWorker.CapturePage(lastHtml, javaScriptDriver);
+                    javaScriptDriver.SetSavedHtml(capturePageWorker.GetAmount());
+                }
+
+                Thread.sleep(POLL_INTERVAL);
+            } catch (NoSuchSessionException e) {
+                log.info("Browser closed by user, stopping polling");
+                captureFinalState(lastHtml, javaScriptDriver, capturePageWorker);
+                break;
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                log.warn("Polling interrupted", e);
+                break;
+            } catch (Exception e) {
+                log.error("Polling error", e);
+                break;
+            }
+        }
     }
 
     private void waitForInitialLoad(WebDriver driver) {
@@ -107,22 +120,32 @@ public class ScrapperDriver {
                 .until(wd -> !Strings.isNullOrEmpty(wd.getTitle()));
     }
 
-    private String captureFinalHtml(WebDriver driver, String lastHtml) {
-        if (lastHtml != null) return lastHtml;
+    private void captureFinalState(String finalHtml,
+                                   JavaScriptDriver javaScriptDriver,
+                                   CapturePageWorker capturePageWorker) {
+
         try {
-            return driver.getPageSource();
+            capturePageWorker.CaptureFinalPage(finalHtml, javaScriptDriver);
         } catch (Exception e) {
-            log.warn("Failed to capture final HTML, browser may be closed", e);
-            return null;
+            log.warn("Failed to capture final HTML, browser may be closed: {}", e.getMessage());
         }
     }
 
-    private void closeDriver(WebDriver driver) {
+    private void closeDriver(DriverWithProfile driverWithProfile) {
         try {
-            driver.quit();
+            driverWithProfile.close();
         } catch (Exception e) {
             log.warn("Failed to quit driver, may already be closed", e);
         }
+    }
+
+    private static File getProfilePath() {
+        URL profileUrl = JavaScriptDriver.class.getResource(DriverConstants.DRIVER_PROFILE_PATH);
+        if (profileUrl == null) return null;
+
+        File profileFile = FilesWorker.GetFileFromURL(profileUrl);
+        if (profileFile.isDirectory()) return profileFile;
+        return null;
     }
 
     // Optional: Shutdown hook to clean up executor on JVM exit

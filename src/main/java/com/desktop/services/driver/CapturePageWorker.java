@@ -21,8 +21,12 @@ public class CapturePageWorker {
             return;
         }
 
-        String styles = javaScriptDriver.GetAllDocumentStyles();
-        driverSaveModels.add(new DriverSaveModel(html, styles));
+        try {
+            String styles = javaScriptDriver.GetAllDocumentStyles();
+            driverSaveModels.add(new DriverSaveModel(html, styles));
+        } catch (Exception e) {
+            driverSaveModels.add(new DriverSaveModel(html));
+        }
     }
 
     public void CaptureFinalPage(String html, JavaScriptDriver javaScriptDriver) {
@@ -32,6 +36,10 @@ public class CapturePageWorker {
 
     public List<DriverSaveModel> GetSaveModelList() {
         return driverSaveModels;
+    }
+
+    public int GetAmount() {
+        return driverSaveModels.size();
     }
 
     public boolean ShouldProcessCss() {

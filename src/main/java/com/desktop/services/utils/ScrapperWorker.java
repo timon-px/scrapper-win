@@ -33,17 +33,16 @@ public class ScrapperWorker {
         ScrapperDriver scrapperDriver = new ScrapperDriver(url);
         boolean shouldProcessStyles = processingOptions.shouldProcessDriverCustomStyles();
 
-        String identifier = UniqueizerWorker.GetRandomCharStringWithPrefix(12);
         String baseUri = getJsoupResponse(url).parse().baseUri();
         List<DriverSaveModel> driverSaveModels = scrapperDriver
-                .RunWebDriver(identifier, shouldProcessStyles)
+                .RunWebDriver(shouldProcessStyles)
                 .join();
 
-        DriverSaveModel driverSaveModel = driverSaveModels.getFirst();
         if (driverSaveModels.isEmpty())
-            throw new RuntimeException("Please try again");
+            throw new RuntimeException("Scrapper hasn't captured any HTML.\nPlease try again");
 
-        return getDriverDocument(driverSaveModel, baseUri, identifier, shouldProcessStyles);
+        DriverSaveModel driverSaveModel = driverSaveModels.getLast();
+        return getDriverDocument(driverSaveModel, baseUri, shouldProcessStyles);
     }
 
     public static String CleanName(String fileName) {
@@ -111,20 +110,15 @@ public class ScrapperWorker {
 
     private static Document getDriverDocument(DriverSaveModel driverSaveModel,
                                               String baseUri,
-                                              String identifier,
                                               boolean shouldProcessDriverCustomStyles) {
-        Document cleanDocument = getCleanDriverDocument(driverSaveModel.getHtml(), baseUri, identifier);
-        if (!shouldProcessDriverCustomStyles) return cleanDocument;
+        Document cleanDocument = getDriverDocument(driverSaveModel.getHtml(), baseUri);
+        if (shouldProcessDriverCustomStyles) return cleanDocument;
 
         return setCutomStyleDocument(cleanDocument, driverSaveModel);
     }
 
-    private static Document getCleanDriverDocument(String html, String baseUri, String identifier) {
-        String captureButtonSelector = String.format("*[data-%s]", identifier);
-
-        Document document = Jsoup.parse(html, baseUri);
-        document.select(captureButtonSelector).remove();
-        return document;
+    private static Document getDriverDocument(String html, String baseUri) {
+        return Jsoup.parse(html, baseUri);
     }
 
     private static Document setCutomStyleDocument(Document document, DriverSaveModel driverSaveModel) {
