@@ -11,9 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -38,16 +36,6 @@ public class FilesWorker {
         if (isFontFileType(absoluteUrl)) return SaveAsEnum.FONT;
 
         return getOtherFileType(absoluteUrl);
-    }
-
-    public static File GetFileFromURL(URL url) {
-        File file;
-        try {
-            file = new File(url.toURI());
-        } catch (URISyntaxException e) {
-            file = new File(url.getPath());
-        }
-        return file;
     }
 
     private static boolean isFontFileType(String absoluteUrl) {
@@ -105,15 +93,16 @@ public class FilesWorker {
                 String configPath = String.format("/%s/%s", PathHelperConstants.TIKA_CONFIG_FOLDER, PathHelperConstants.TIKA_CONFIG_FONT_FILE);
                 URL fontConfig = FontDetector.class.getResource(configPath);
 
-                if (fontConfig != null) {
+                if (fontConfig != null)
                     tikaConfig = new TikaConfig(fontConfig);
-                }
+
             } catch (IOException | SAXException | TikaException e) {
                 log.error("Font detector error: {}", e.getMessage());
             }
 
             if (tikaConfig != null)
                 tika = new Tika(tikaConfig);
+
             else tika = null;
         }
     }

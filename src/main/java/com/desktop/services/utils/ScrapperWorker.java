@@ -111,14 +111,11 @@ public class ScrapperWorker {
     private static Document getDriverDocument(DriverSaveModel driverSaveModel,
                                               String baseUri,
                                               boolean shouldProcessDriverCustomStyles) {
-        Document cleanDocument = getDriverDocument(driverSaveModel.getHtml(), baseUri);
-        if (shouldProcessDriverCustomStyles) return cleanDocument;
 
-        return setCutomStyleDocument(cleanDocument, driverSaveModel);
-    }
+        Document document = Jsoup.parse(driverSaveModel.getHtml(), baseUri);
+        if (shouldProcessDriverCustomStyles) return document;
 
-    private static Document getDriverDocument(String html, String baseUri) {
-        return Jsoup.parse(html, baseUri);
+        return setCutomStyleDocument(document, driverSaveModel);
     }
 
     private static Document setCutomStyleDocument(Document document, DriverSaveModel driverSaveModel) {
