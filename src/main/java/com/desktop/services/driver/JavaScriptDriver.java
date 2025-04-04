@@ -1,12 +1,13 @@
 package com.desktop.services.driver;
 
 import com.desktop.services.config.constants.DriverConstants;
-import com.desktop.services.utils.FilesWorker;
+import com.desktop.services.utils.ResourceExtractor;
 import com.google.common.base.Strings;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.chrome.ChromeOptions;
 
-import java.net.URL;
+import java.io.File;
+import java.io.IOException;
 
 public class JavaScriptDriver {
     private final JavascriptExecutor js;
@@ -15,11 +16,11 @@ public class JavaScriptDriver {
         this.js = js;
     }
 
-    public static ChromeOptions GetChromeOptions() {
+    public static ChromeOptions GetChromeOptions() throws IOException {
         ChromeOptions options = new ChromeOptions();
 
-        URL scriptUrl = JavaScriptDriver.class.getResource(DriverConstants.DRIVER_EXTENSION_PATH);
-        if (scriptUrl != null) options.addExtensions(FilesWorker.GetFileFromURL(scriptUrl));
+        File extensionFile = ResourceExtractor.ResolveResource(DriverConstants.DRIVER_EXTENSION_PATH, true);
+        options.addExtensions(extensionFile);
 
         return options;
     }
@@ -45,7 +46,8 @@ public class JavaScriptDriver {
 
         if (Strings.isNullOrEmpty(argument))
             eventJs = String.format("document.dispatchEvent(new CustomEvent(\"%s\"))", event);
-        else eventJs = String.format("document.dispatchEvent(new CustomEvent(\"%s\", { detail: %s }))", event, argument);
+        else
+            eventJs = String.format("document.dispatchEvent(new CustomEvent(\"%s\", { detail: %s }))", event, argument);
 
         js.executeScript(eventJs);
     }

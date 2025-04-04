@@ -1,8 +1,6 @@
 package com.desktop.services.driver;
 
-import com.desktop.services.config.constants.DriverConstants;
 import com.desktop.services.models.DriverSaveModel;
-import com.desktop.services.utils.FilesWorker;
 import com.google.common.base.Strings;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.NoSuchSessionException;
@@ -13,8 +11,6 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.net.URL;
 import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
@@ -40,18 +36,14 @@ public class ScrapperDriver {
 
     public CompletableFuture<List<DriverSaveModel>> RunWebDriver(boolean shouldProcessStyles) {
         return CompletableFuture.supplyAsync(this::initializeDriver, EXECUTOR)
-                .thenCompose(driver -> waitForDriverToClose(driver, shouldProcessStyles))
-                .exceptionally(throwable -> {
-                    log.error("Error during web driver execution", throwable);
-                    throw new RuntimeException("Web driver execution failed", throwable);
-                });
+                .thenCompose(driver -> waitForDriverToClose(driver, shouldProcessStyles));
     }
 
     private DriverWithProfile initializeDriver() {
         try {
             ChromeOptions options = JavaScriptDriver.GetChromeOptions();
 
-            TempProfileManager profileManager = new TempProfileManager(getProfilePath());
+            TempProfileManager profileManager = new TempProfileManager();
             profileManager.applyToOptions(options);
 
             WebDriver driver = new ChromeDriver(options);
@@ -60,7 +52,7 @@ public class ScrapperDriver {
 
             return new DriverWithProfile(driver, profileManager);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to initialize WebDriver", e);
+            throw new RuntimeException("Failed to initialize WebDriver: " + e.getMessage(), e);
         }
     }
 
@@ -110,6 +102,7 @@ public class ScrapperDriver {
                 break;
             } catch (Exception e) {
                 log.error("Polling error", e);
+                captureFinalState(lastHtml, javaScriptDriver, capturePageWorker);
                 break;
             }
         }
@@ -124,6 +117,8 @@ public class ScrapperDriver {
                                    JavaScriptDriver javaScriptDriver,
                                    CapturePageWorker capturePageWorker) {
 
+        log.info("Try to capture last html state if doesn't before");
+
         try {
             capturePageWorker.CaptureFinalPage(finalHtml, javaScriptDriver);
         } catch (Exception e) {
@@ -137,15 +132,6 @@ public class ScrapperDriver {
         } catch (Exception e) {
             log.warn("Failed to quit driver, may already be closed", e);
         }
-    }
-
-    private static File getProfilePath() {
-        URL profileUrl = JavaScriptDriver.class.getResource(DriverConstants.DRIVER_PROFILE_PATH);
-        if (profileUrl == null) return null;
-
-        File profileFile = FilesWorker.GetFileFromURL(profileUrl);
-        if (profileFile.isDirectory()) return profileFile;
-        return null;
     }
 
     // Optional: Shutdown hook to clean up executor on JVM exit
