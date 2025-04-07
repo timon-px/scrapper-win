@@ -2,7 +2,7 @@ package com.desktop.application.controller.worker;
 
 import com.desktop.application.controller.worker.interfaces.IControllerWorker;
 import com.desktop.application.utils.FileExplorerHelper;
-import com.desktop.services.config.constants.UniqueizerConstants;
+import com.desktop.core.common.constants.UniqueizerConstants;
 import javafx.application.Platform;
 import javafx.scene.Node;
 import javafx.scene.Scene;
