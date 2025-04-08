@@ -129,7 +129,8 @@ public class ScrapperWorker {
 
     private static Document setCutomStyleDocument(Document document, DriverSaveModel driverSaveModel) {
         if (driverSaveModel.getStyle() == null) return document;
-        document.select("style").remove();
+        DocumentWorker.ScrapStylesheets(document).remove();
+        DocumentWorker.ScrapBlockStylesheets(document).remove();
         document.select(".hide-when-no-script").remove();
         return DocumentWorker.AppendStyleBlock(document, driverSaveModel.getStyle());
     }

@@ -3,10 +3,10 @@ package com.desktop.application.controller;
 import com.desktop.application.controller.worker.ControllerWorker;
 import com.desktop.application.controller.worker.interfaces.IControllerWorker;
 import com.desktop.application.validation.ScrapperValidation;
-import com.desktop.core.common.dto.ScrapperRequestDTO;
-import com.desktop.core.common.dto.ScrapperResponseDTO;
 import com.desktop.core.api.ScrapperService;
 import com.desktop.core.api.interfaces.IScrapperService;
+import com.desktop.core.common.dto.ScrapperRequestDTO;
+import com.desktop.core.common.dto.ScrapperResponseDTO;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -47,15 +47,28 @@ public class ScrapperController {
     private CheckBox replace_to_offer_cbx;
     @FXML
     private CheckBox process_driver_cbx;
+    @FXML
+    private CheckBox scrap_styles_driver_cbx;
 
     @FXML
     private void initialize() {
         disableNodes = List.of(browse_btn, submit_btn, dir_path_tf, web_url_tf, replace_to_offer_cbx, process_driver_cbx);
 
+        processDriverCbxInit(process_driver_cbx);
         dirPathTfInit(dir_path_tf);
         browseBtnInit(browse_btn);
         progressBarInit(progress_bar);
         submitBtnInit(submit_btn);
+    }
+
+    private void processDriverCbxInit(CheckBox cbx) {
+        scrap_styles_driver_cbx.setDisable(true);
+        cbx.setOnAction(event -> {
+            if (!cbx.isSelected()) {
+                scrap_styles_driver_cbx.setDisable(true);
+                scrap_styles_driver_cbx.setSelected(false);
+            } else scrap_styles_driver_cbx.setDisable(false);
+        });
     }
 
     private void submitBtnInit(Button button) {
@@ -102,8 +115,10 @@ public class ScrapperController {
     private ScrapperRequestDTO.ProcessingOptions getProcessingOptions() {
         boolean shouldReplaceHref = replace_to_offer_cbx.isSelected();
         boolean shouldProcessDriver = process_driver_cbx.isSelected();
+        boolean shouldProcessDriverCustomStyles = scrap_styles_driver_cbx.isSelected();
+
         return new ScrapperRequestDTO
-                .ProcessingOptions(shouldReplaceHref, shouldProcessDriver, false);
+                .ProcessingOptions(shouldReplaceHref, shouldProcessDriver, shouldProcessDriverCustomStyles);
     }
 
     private boolean validateFields(String dirPath, String webUrl) {
