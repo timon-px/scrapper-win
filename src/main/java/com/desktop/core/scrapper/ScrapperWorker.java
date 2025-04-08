@@ -1,11 +1,11 @@
 package com.desktop.core.scrapper;
 
-import com.desktop.core.common.dto.ScrapperRequestDTO;
 import com.desktop.core.common.constants.RegexConstants;
 import com.desktop.core.common.constants.ScrapperWorkerConstants;
+import com.desktop.core.common.dto.ScrapperRequestDTO;
 import com.desktop.core.common.enums.SaveAsEnum;
-import com.desktop.core.driver.ScrapperDriver;
 import com.desktop.core.common.model.DriverSaveModel;
+import com.desktop.core.driver.ScrapperDriver;
 import com.desktop.core.utils.DocumentWorker;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
@@ -17,18 +17,20 @@ import java.io.IOException;
 import java.net.Proxy;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ScrapperWorker {
     private static final Logger log = LoggerFactory.getLogger(ScrapperWorker.class);
 
-    public static Document GetDocument(String url) throws IOException {
-        return getJsoupResponse(url).parse();
+    public static List<Document> GetDocuments(String url) throws IOException {
+        Document document = getJsoupResponse(url).parse();
+        return List.of(document);
     }
 
-    public static Document GetDocument(String url, ScrapperRequestDTO.ProcessingOptions processingOptions) throws IOException {
+    public static List<Document> GetDocuments(String url, ScrapperRequestDTO.ProcessingOptions processingOptions) throws IOException {
         if (processingOptions == null || !processingOptions.shouldProcessDriver()) {
-            return GetDocument(url);
+            return GetDocuments(url);
         }
 
         ScrapperDriver scrapperDriver = new ScrapperDriver(url);
@@ -42,8 +44,7 @@ public class ScrapperWorker {
         if (driverSaveModels.isEmpty())
             throw new RuntimeException("Scrapper hasn't captured any HTML.\nPlease try again");
 
-        DriverSaveModel driverSaveModel = driverSaveModels.getLast();
-        return getDriverDocument(driverSaveModel, baseUri, shouldProcessStyles);
+        return getDriverDocuments(driverSaveModels, baseUri, shouldProcessStyles);
     }
 
     public static String CleanName(String fileName) {
@@ -109,14 +110,21 @@ public class ScrapperWorker {
         return getJsoupConnection(url).proxy(proxy).execute();
     }
 
-    private static Document getDriverDocument(DriverSaveModel driverSaveModel,
-                                              String baseUri,
-                                              boolean shouldProcessDriverCustomStyles) {
+    private static List<Document> getDriverDocuments(List<DriverSaveModel> driverSaveModels,
+                                                     String baseUri,
+                                                     boolean shouldProcessDriverCustomStyles) {
 
-        Document document = Jsoup.parse(driverSaveModel.getHtml(), baseUri);
-        if (shouldProcessDriverCustomStyles) return document;
+        List<Document> documents = new ArrayList<>();
 
-        return setCutomStyleDocument(document, driverSaveModel);
+        for (DriverSaveModel driverSaveModel : driverSaveModels) {
+            Document document = Jsoup.parse(driverSaveModel.getHtml(), baseUri);
+            if (shouldProcessDriverCustomStyles)
+                document = setCutomStyleDocument(document, driverSaveModel);
+
+            documents.add(document);
+        }
+
+        return documents;
     }
 
     private static Document setCutomStyleDocument(Document document, DriverSaveModel driverSaveModel) {

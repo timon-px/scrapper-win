@@ -8,6 +8,7 @@ import com.desktop.core.storage.IStorageWorker;
 import com.desktop.core.storage.StorageWorker;
 import com.desktop.core.uniqueizer.UniqueizerWorker;
 import com.desktop.core.uniqueizer.processor.UniqueizerProcessor;
+import com.desktop.core.utils.DocumentWorker;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import org.jsoup.Jsoup;
@@ -71,11 +72,7 @@ public class UniqueizerService implements IUniqueizerService {
 
         return CompletableFuture.supplyAsync(() -> {
             try {
-                List<SimpleDoubleProperty> fileProgresses = files.stream()
-                        .map(file -> new SimpleDoubleProperty(0.0))
-                        .toList();
-
-                UniqueizerWorker.BindOverallProgress(progress, fileProgresses);
+                List<SimpleDoubleProperty> fileProgresses = bindProgresses(files);
 
                 List<CompletableFuture<Path>> processingFutures = new ArrayList<>();
                 for (int i = 0; i < files.size(); i++) {
@@ -124,12 +121,7 @@ public class UniqueizerService implements IUniqueizerService {
 
     // Aggregate processing results
     private UniqueizerResponseDTO aggregateResults(List<CompletableFuture<Path>> processingFutures) {
-        CompletableFuture.allOf(processingFutures.toArray(new CompletableFuture[0]))
-                .exceptionally(throwable -> {
-                    log.error("Processing failed for some files: {}", throwable.getMessage());
-                    return null;
-                }).join();
-
+        CompletableFuture.allOf(processingFutures.toArray(new CompletableFuture[0])).join();
         List<Path> successfulPaths = processingFutures.stream()
                 .map(CompletableFuture::join)
                 .filter(Objects::nonNull)
@@ -151,6 +143,17 @@ public class UniqueizerService implements IUniqueizerService {
                 message
         );
     }
+
+    // Bind progresses for several documents
+    private List<SimpleDoubleProperty> bindProgresses(List<File> files) {
+        List<SimpleDoubleProperty> fileProgresses = files.stream()
+                .map(file -> new SimpleDoubleProperty(0.0))
+                .toList();
+
+        DocumentWorker.BindOverallProgress(progress, fileProgresses);
+        return fileProgresses;
+    }
+
 
     private CompletableFuture<Void> startProcesses(Document document,
                                                    UniqueizerRequestDTO.ProcessingOptions processingOptions,

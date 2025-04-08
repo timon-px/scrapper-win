@@ -3,13 +3,13 @@ package com.desktop.core.scrapper.processor;
 import com.desktop.core.common.constants.ScrapperConstants;
 import com.desktop.core.common.enums.SaveAsEnum;
 import com.desktop.core.common.model.FileSaveModel;
-import com.desktop.core.scrapper.processor.interfaces.IDocumentProcess;
-import com.desktop.core.storage.IStorageWorker;
 import com.desktop.core.scrapper.FilesWorker;
 import com.desktop.core.scrapper.PathHelper;
 import com.desktop.core.scrapper.ScrapperWorker;
 import com.desktop.core.scrapper.StylesheetWorker;
-import com.desktop.core.utils.*;
+import com.desktop.core.scrapper.processor.interfaces.IDocumentProcess;
+import com.desktop.core.storage.IStorageWorker;
+import com.desktop.core.utils.DocumentWorker;
 import javafx.beans.property.DoubleProperty;
 import org.apache.commons.io.FilenameUtils;
 import org.jsoup.Connection;
@@ -35,13 +35,17 @@ public class StylesheetProcessor implements IDocumentProcess {
     private final IStorageWorker storageWorker;
     private final Path stylesheetPath;
     private final ConcurrentHashMap<String, FileSaveModel> filesToSave;
-    private final ConcurrentHashMap<String, String> usedFileNames = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, String> usedFileNames;
     private final CssPathResolver pathResolver;
 
-    public StylesheetProcessor(IStorageWorker storageWorker, Path mainPath, ConcurrentHashMap<String, FileSaveModel> filesToSave) {
+    public StylesheetProcessor(IStorageWorker storageWorker,
+                               Path mainPath, ConcurrentHashMap<String, String> usedFileNames,
+                               ConcurrentHashMap<String, FileSaveModel> filesToSave) {
+
         this.storageWorker = storageWorker;
         this.stylesheetPath = mainPath.resolve(ScrapperConstants.STYLESHEET_FOLDER);
         this.filesToSave = filesToSave;
+        this.usedFileNames = usedFileNames;
         this.pathResolver = new CssPathResolver();
     }
 

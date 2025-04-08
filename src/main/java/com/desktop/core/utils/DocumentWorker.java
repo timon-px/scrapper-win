@@ -5,6 +5,7 @@ import com.desktop.core.common.constants.ScrapperWorkerConstants;
 import com.desktop.core.scrapper.FilesWorker;
 import javafx.application.Platform;
 import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import org.apache.commons.io.FilenameUtils;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -97,6 +98,25 @@ public class DocumentWorker {
 
     public static double GetProgressIncrement(double completed, double overall) {
         return completed / overall;
+    }
+
+    public static void BindOverallProgress(DoubleProperty overallProgress, List<SimpleDoubleProperty> fileProgresses) {
+        bindProgressListener(overallProgress, overallProgress, fileProgresses);
+
+        // Bind each file's progress to trigger the overall update
+        for (DoubleProperty fileProgress : fileProgresses) {
+            bindProgressListener(fileProgress, overallProgress, fileProgresses);
+        }
+    }
+
+    private static void bindProgressListener(DoubleProperty currentProgress, DoubleProperty overallProgress, List<SimpleDoubleProperty> fileProgresses) {
+        currentProgress.addListener((obs, oldVal, newVal) -> {
+            double total = fileProgresses.stream()
+                    .mapToDouble(DoubleProperty::get)
+                    .sum();
+            double average = fileProgresses.isEmpty() ? 0.0 : total / fileProgresses.size();
+            overallProgress.set(average);
+        });
     }
 
     private static void addAllowedFile(Elements elementsTo, Element check, String attr) {

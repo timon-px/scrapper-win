@@ -5,6 +5,7 @@ import com.desktop.core.common.constants.ScrapperConstants;
 import com.desktop.core.common.dto.ScrapperRequestDTO;
 import com.desktop.core.common.dto.ScrapperResponseDTO;
 import com.desktop.core.common.model.FileSaveModel;
+import com.desktop.core.scrapper.ProcessingContext;
 import com.desktop.core.scrapper.ScrapperWorker;
 import com.desktop.core.scrapper.processor.FilesProcessor;
 import com.desktop.core.scrapper.processor.HtmlProcessor;
@@ -24,6 +25,9 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -63,62 +67,104 @@ public class ScrapperService implements IScrapperService {
     private CompletableFuture<ScrapperResponseDTO> processWebAsync(ScrapperRequestDTO request, IStorageWorker storageWorker) {
         ExecutorService executor = Executors.newSingleThreadExecutor();
 
-        return CompletableFuture.supplyAsync(() -> fetchDocument(request), executor)
-                .thenCompose(document -> {
-                    ConcurrentHashMap<String, FileSaveModel> filesToSaveList = new ConcurrentHashMap<>();
-
-                    updateProgress(0.05); // Initial fetch complete
-                    try {
-                        Path savePath = prepareSavePath(document, storageWorker);
-                        return processDocument(document, savePath, filesToSaveList, storageWorker, request.getProcessingOptions());
-                    } catch (URISyntaxException e) {
-                        throw new RuntimeException("Error occurred while web parsing: " + e.getMessage(), e);
-                    }
-                })
-                .thenApply(this::createSuccessResponse)
+        return CompletableFuture.supplyAsync(() -> fetchDocuments(request), executor)
+                .thenCompose(documents -> processDocuments(documents, storageWorker, request))
                 .exceptionally(this::handleProcessingError)
                 .whenComplete((result, throwable) -> executor.shutdown()); // Shutdown executor when done
+    }
+
+    private CompletableFuture<ScrapperResponseDTO> processDocuments(List<Document> documents,
+                                                                    IStorageWorker storageWorker,
+                                                                    ScrapperRequestDTO request) {
+
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                Document firstDocument = documents.getFirst();
+                Path savePath = prepareSavePath(firstDocument, storageWorker);
+                List<SimpleDoubleProperty> documentProgresses = bindProgresses(documents);
+
+                List<CompletableFuture<Path>> processingFutures = new ArrayList<>();
+                for (int i = 0; i < documents.size(); i++) {
+                    Document document = documents.get(i);
+                    SimpleDoubleProperty documentProgress = documentProgresses.get(i);
+                    ProcessingContext processingContext = new ProcessingContext(savePath, documentProgress, request.getProcessingOptions());
+
+                    processingFutures.add(processDocument(document, processingContext, i, storageWorker));
+                }
+
+                return aggregateResults(processingFutures, savePath);
+            } catch (URISyntaxException e) {
+                throw new RuntimeException("Error occurred while web page processing: " + e.getMessage(), e);
+            }
+        });
     }
 
     // Process document and save results
     private CompletableFuture<Path> processDocument(
             Document document,
-            Path savePath,
-            ConcurrentHashMap<String, FileSaveModel> filesToSaveList,
-            IStorageWorker storageWorker,
-            ScrapperRequestDTO.ProcessingOptions options) {
+            ProcessingContext processingContext,
+            int pageIndex,
+            IStorageWorker storageWorker) {
 
-        return startProcesses(document, savePath, filesToSaveList, storageWorker)
+        return startProcesses(document, processingContext, storageWorker)
                 .thenCompose(unused -> {
-                    finalProcess(document, options);
-                    return saveDocument(document, savePath, storageWorker);
+                    finalProcess(document, processingContext.getOptions());
+                    return saveDocument(document, processingContext.getSavePath(), pageIndex, storageWorker);
                 })
                 .thenApply(finalPath -> {
                     updateProgress(1.0); // Complete
-                    return finalPath.getParent();
+                    return finalPath;
                 });
     }
 
     // Start processing chain
     private CompletableFuture<Void> startProcesses(
             Document document,
-            Path path,
-            ConcurrentHashMap<String, FileSaveModel> filesToSaveList,
+            ProcessingContext processingContext,
             IStorageWorker storageWorker) {
 
-        IDocumentProcess stylesheetProcessor = new StylesheetProcessor(storageWorker, path, filesToSaveList);
-        IDocumentProcess htmlProcessor = new HtmlProcessor(filesToSaveList);
-        IFilesProcess filesProcessor = new FilesProcessor(storageWorker, path);
+        Path savePath = processingContext.getSavePath();
+        ConcurrentHashMap<String, FileSaveModel> filesToSaveList = processingContext.getFilesToSaveList();
+        ConcurrentHashMap<String, String> usedFileNamesCssList = processingContext.getUsedFileNamesCssList();
+        SimpleDoubleProperty currentProgress = processingContext.progressProperty();
 
-        return stylesheetProcessor.ProcessAsync(document, progress)
-                .thenCompose(unused -> htmlProcessor.ProcessAsync(document, progress))
-                .thenCompose(unused -> filesProcessor.SaveAsync(filesToSaveList, progress));
+        IDocumentProcess stylesheetProcessor = new StylesheetProcessor(storageWorker, savePath, usedFileNamesCssList, filesToSaveList);
+        IDocumentProcess htmlProcessor = new HtmlProcessor(filesToSaveList);
+        IFilesProcess filesProcessor = new FilesProcessor(storageWorker, savePath);
+
+        return stylesheetProcessor.ProcessAsync(document, currentProgress)
+                .thenCompose(unused -> htmlProcessor.ProcessAsync(document, currentProgress))
+                .thenCompose(unused -> filesProcessor.SaveAsync(filesToSaveList, currentProgress));
+    }
+
+    // Save the final document
+    private CompletableFuture<Path> saveDocument(Document document, Path path, int pageIndex, IStorageWorker storageWorker) {
+        String fileIdName = pageIndex > 0 ? "_" + pageIndex : "";
+        String fileName = ScrapperConstants.HTML_NAME + fileIdName
+                + ScrapperConstants.HTML_EXTENSION;
+
+        return storageWorker.SaveContentAsync(document.outerHtml(), path, fileName);
+    }
+
+    // Aggregate processing results
+    private ScrapperResponseDTO aggregateResults(List<CompletableFuture<Path>> processingFutures, Path savePath) {
+        CompletableFuture.allOf(processingFutures.toArray(new CompletableFuture[0])).join();
+        List<Path> successfulPaths = processingFutures.stream()
+                .map(CompletableFuture::join)
+                .filter(Objects::nonNull)
+                .map(Path::toAbsolutePath)
+                .toList();
+
+        return createResponse(successfulPaths, savePath);
     }
 
     // Fetch the document from URL
-    private Document fetchDocument(ScrapperRequestDTO request) {
+    private List<Document> fetchDocuments(ScrapperRequestDTO request) {
         try {
-            return ScrapperWorker.GetDocument(request.getUrl(), request.getProcessingOptions());
+            List<Document> documents = ScrapperWorker.GetDocuments(request.getUrl(), request.getProcessingOptions());
+            updateProgress(0.05); // Initial fetch complete
+
+            return documents;
         } catch (IOException e) {
             throw new RuntimeException("Error during web fetching: " + e.getMessage(), e);
         }
@@ -138,20 +184,34 @@ public class ScrapperService implements IScrapperService {
         }
     }
 
-    // Save the final document
-    private CompletableFuture<Path> saveDocument(Document document, Path path, IStorageWorker storageWorker) {
-        return storageWorker.SaveContentAsync(document.outerHtml(), path, ScrapperConstants.HTML_NAME);
-    }
-
     // Create success response
-    private ScrapperResponseDTO createSuccessResponse(Path finalPath) {
-        return new ScrapperResponseDTO(true, finalPath.toAbsolutePath(), "Website has successfully parsed!");
+    private ScrapperResponseDTO createResponse(List<Path> successfulPaths, Path savePath) {
+        String pluralPage = successfulPaths.size() == 1 ? " page" : " pages";
+        String message = successfulPaths.isEmpty()
+                ? "No pages were processed successfully"
+                : "Website has been successfully parsed!\nProcessed " + successfulPaths.size() + pluralPage;
+
+        return new ScrapperResponseDTO(
+                !successfulPaths.isEmpty(),
+                savePath,
+                message
+        );
     }
 
     // Handle errors during processing
     private ScrapperResponseDTO handleProcessingError(Throwable ex) {
         log.error("Error during web processing", ex);
         return new ScrapperResponseDTO(false, "Error occurred while processing:\n" + ex.getMessage());
+    }
+
+    // Bind progresses for several documents
+    private List<SimpleDoubleProperty> bindProgresses(List<Document> documents) {
+        List<SimpleDoubleProperty> documentProgresses = documents.stream()
+                .map(file -> new SimpleDoubleProperty(0.0))
+                .toList();
+
+        DocumentWorker.BindOverallProgress(progress, documentProgresses);
+        return documentProgresses;
     }
 
     // Update progress helper

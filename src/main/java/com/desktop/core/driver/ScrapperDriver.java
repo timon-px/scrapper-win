@@ -92,6 +92,8 @@ public class ScrapperDriver {
                     javaScriptDriver.SetSavedHtml(capturePageWorker.GetAmount());
                 }
 
+                // update count if changed page
+                javaScriptDriver.UpdateAmountCaptures(capturePageWorker.GetAmount());
                 Thread.sleep(POLL_INTERVAL);
             } catch (NoSuchWindowException | NoSuchSessionException e) {
                 log.info("Browser closed by user, stopping polling");
