@@ -11,6 +11,7 @@ import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,6 +58,7 @@ public class ScrapperController {
         processDriverCbxInit(process_driver_cbx);
 
         dirPathTfInit(dir_path_tf);
+        webUrlTfInit(web_url_tf);
         browseBtnInit(browse_btn);
 
         progressBarInit(progress_bar);
@@ -89,6 +91,12 @@ public class ScrapperController {
         FileSystemView view = FileSystemView.getFileSystemView();
         File file = view.getHomeDirectory();
         dirPathTf.setText(file.getAbsolutePath());
+    }
+
+    private void webUrlTfInit(TextField webUrlTf) {
+        webUrlTf.setOnKeyReleased(event -> {
+            if (event.getCode() == KeyCode.ENTER) handleSubmit();
+        });
     }
 
     private void handleSubmit() {
