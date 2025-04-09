@@ -106,7 +106,8 @@
                         <ColumnConstraints hgrow="SOMETIMES" percentWidth="50.0"/>
                     </columnConstraints>
                     <CheckBox fx:id="replace_to_offer_cbx" mnemonicParsing="false" text="Replace href with {offer}"
-                              textAlignment="CENTER" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS">
+                              textAlignment="CENTER" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS"
+                              GridPane.rowSpan="2147483647">
                         <GridPane.margin>
                             <Insets/>
                         </GridPane.margin>
@@ -121,14 +122,14 @@
                             <Font name="JetBrains Mono Medium" size="12.0"/>
                         </font>
                     </CheckBox>
-                    <CheckBox fx:id="scrap_styles_driver_cbx" mnemonicParsing="false" text="Scrap styles"
+                    <CheckBox fx:id="scrap_styles_driver_cbx" mnemonicParsing="false" text="Scrap document styles"
                               textAlignment="CENTER" GridPane.columnIndex="1" GridPane.halignment="CENTER"
                               GridPane.hgrow="ALWAYS" GridPane.rowIndex="1">
                         <font>
                             <Font name="JetBrains Mono Medium" size="12.0"/>
                         </font>
                         <GridPane.margin>
-                            <Insets right="28.0"/>
+                            <Insets left="28.0"/>
                         </GridPane.margin>
                     </CheckBox>
                     <rowConstraints>

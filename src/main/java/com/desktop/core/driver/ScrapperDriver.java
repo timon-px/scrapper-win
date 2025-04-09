@@ -1,13 +1,11 @@
 package com.desktop.core.driver;
 
 import com.desktop.core.common.model.DriverSaveModel;
-import com.google.common.base.Strings;
 import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.NoSuchSessionException;
-import org.openqa.selenium.NoSuchWindowException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,14 +19,23 @@ import java.util.concurrent.Executors;
 
 public class ScrapperDriver {
     private static final Logger log = LoggerFactory.getLogger(ScrapperDriver.class);
-    private static final Duration POLL_INTERVAL = Duration.ofMillis(500);
-    private static final Duration INITIAL_WAIT_TIMEOUT = Duration.ofSeconds(5);
+    private static final Duration INITIAL_WAIT_TIMEOUT = Duration.ofSeconds(30);
     private static final ExecutorService EXECUTOR = Executors.newCachedThreadPool(); // Shared thread pool
 
     private final String url;
+    private final DriverProxyManager driverProxyManager;
 
     public ScrapperDriver(String url) {
+        this(url, null);
+    }
+
+    public ScrapperDriver(String url, String proxyHost, int proxyPort) {
+        this(url, String.format("%s:%s", proxyHost, proxyPort));
+    }
+
+    public ScrapperDriver(String url, String proxy) {
         this.url = Objects.requireNonNull(url, "URL must not be null");
+        this.driverProxyManager = new DriverProxyManager(proxy);
     }
 
     public CompletableFuture<List<DriverSaveModel>> RunWebDriver() {
@@ -45,7 +52,8 @@ public class ScrapperDriver {
             ChromeOptions options = JavaScriptDriver.GetChromeOptions();
 
             TempProfileManager profileManager = new TempProfileManager();
-            profileManager.applyToOptions(options);
+            profileManager.ApplyToOptions(options);
+            driverProxyManager.ApplyToOptions(options);
 
             WebDriver driver = new ChromeDriver(options);
             driver.get(url);
@@ -67,8 +75,7 @@ public class ScrapperDriver {
             JavaScriptDriver javaScriptDriver = new JavaScriptDriver(js);
 
             try {
-                waitForInitialLoad(driver);
-                pollAndCapture(driver, javaScriptDriver, capturePageWorker);
+                startCapturing(driver, javaScriptDriver, capturePageWorker);
             } catch (Exception e) {
                 log.error("Processing error", e);
             } finally {
@@ -79,54 +86,45 @@ public class ScrapperDriver {
         }, EXECUTOR);
     }
 
-    private void pollAndCapture(WebDriver driver,
+    private void startCapturing(WebDriver driver,
                                 JavaScriptDriver javaScriptDriver,
                                 CapturePageWorker capturePageWorker) {
-        String lastHtml = null;
-        while (true) {
-            try {
-                lastHtml = driver.getPageSource();
-
-                if (javaScriptDriver.IsReadyToSave()) {
-                    capturePageWorker.CapturePage(lastHtml, javaScriptDriver);
-                    javaScriptDriver.SetSavedHtml(capturePageWorker.GetAmount());
-                }
-
-                // update count if changed page
-                javaScriptDriver.UpdateAmountCaptures(capturePageWorker.GetAmount());
-                Thread.sleep(POLL_INTERVAL);
-            } catch (NoSuchWindowException | NoSuchSessionException e) {
-                log.info("Browser closed by user, stopping polling");
-                captureFinalState(lastHtml, javaScriptDriver, capturePageWorker);
-                break;
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                log.warn("Polling interrupted", e);
-                break;
-            } catch (Exception e) {
-                log.error("Polling error", e);
-                captureFinalState(lastHtml, javaScriptDriver, capturePageWorker);
-                break;
-            }
-        }
-    }
-
-    private void waitForInitialLoad(WebDriver driver) {
-        new WebDriverWait(driver, INITIAL_WAIT_TIMEOUT)
-                .until(wd -> !Strings.isNullOrEmpty(wd.getTitle()));
-    }
-
-    private void captureFinalState(String finalHtml,
-                                   JavaScriptDriver javaScriptDriver,
-                                   CapturePageWorker capturePageWorker) {
-
-        log.info("Try to capture last html state if doesn't before");
-
         try {
-            capturePageWorker.CaptureFinalPage(finalHtml, javaScriptDriver);
-        } catch (Exception e) {
-            log.warn("Failed to capture final HTML, browser may be closed: {}", e.getMessage());
+            WebDriverWait wait = new WebDriverWait(driver, INITIAL_WAIT_TIMEOUT);
+            wait.until(ExpectedConditions.not(innerDriver -> {
+                try {
+                    if (innerDriver == null) return false;
+                    innerDriver.getTitle();
+
+                    capturePage(driver, javaScriptDriver, capturePageWorker);
+                    return true;
+                } catch (Exception ex) {
+                    log.info("Couldn't connect / Browser closed by user, stopping polling");
+                    capturePageWorker.CaptureFinalPage();
+                    return false;
+                }
+            }));
+        } catch (org.openqa.selenium.TimeoutException ex) {
+            log.info("Timeout | Trying again");
+            startCapturing(driver, javaScriptDriver, capturePageWorker);
         }
+    }
+
+    private void capturePage(WebDriver driver,
+                             JavaScriptDriver javaScriptDriver,
+                             CapturePageWorker capturePageWorker) {
+
+        javaScriptDriver.SetLoadedHtml();
+
+        String lastHtml = driver.getPageSource();
+        boolean isReadyToSave = javaScriptDriver.IsReadyToSave();
+        capturePageWorker.CapturePage(lastHtml, javaScriptDriver, isReadyToSave);
+
+        int capturesAmount = capturePageWorker.GetAmount();
+        if (isReadyToSave) javaScriptDriver.SetSavedHtml(capturesAmount);
+
+        // update count if changed page
+        javaScriptDriver.UpdateAmountCaptures(capturesAmount);
     }
 
     private void closeDriver(DriverWithProfile driverWithProfile) {

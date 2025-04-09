@@ -1,7 +1,6 @@
 package com.desktop.core.driver;
 
 import com.desktop.core.common.model.DriverSaveModel;
-import com.google.common.base.Strings;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,8 +10,15 @@ public class CapturePageWorker {
     private final List<DriverSaveModel> driverSaveModels = new ArrayList<>();
     private final boolean shouldProcessCss;
 
+    private DriverSaveModel tempDriverSaveModel;
+
     public CapturePageWorker(boolean shouldProcessCss) {
         this.shouldProcessCss = shouldProcessCss;
+    }
+
+    public void CapturePage(String html, JavaScriptDriver javaScriptDriver, boolean shouldSave) {
+        if (!shouldSave) tempDriverSaveModel = new DriverSaveModel(html);
+        else CapturePage(html, javaScriptDriver);
     }
 
     public void CapturePage(String html, JavaScriptDriver javaScriptDriver) {
@@ -29,9 +35,9 @@ public class CapturePageWorker {
         }
     }
 
-    public void CaptureFinalPage(String html, JavaScriptDriver javaScriptDriver) {
-        if (!driverSaveModels.isEmpty() || Strings.isNullOrEmpty(html)) return;
-        CapturePage(html, javaScriptDriver);
+    public void CaptureFinalPage() {
+        if (!driverSaveModels.isEmpty()) return;
+        driverSaveModels.add(tempDriverSaveModel);
     }
 
     public List<DriverSaveModel> GetSaveModelList() {

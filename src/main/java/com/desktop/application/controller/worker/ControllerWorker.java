@@ -84,7 +84,7 @@ public class ControllerWorker implements IControllerWorker {
     }
 
     @Override
-    public Optional<ButtonType> ShowAllert(Alert.AlertType type, String title, String header, String content) {
+    public Optional<ButtonType> ShowAlert(Alert.AlertType type, String title, String header, String content) {
         Alert alert = new Alert(type);
 
         alert.setTitle(title);
@@ -96,7 +96,7 @@ public class ControllerWorker implements IControllerWorker {
 
     @Override
     public void OpenDownloadedFolderDialog(Path directory, String message) {
-        Optional<ButtonType> result = ShowAllert(Alert.AlertType.CONFIRMATION,
+        Optional<ButtonType> result = ShowAlert(Alert.AlertType.CONFIRMATION,
                 "Done",
                 message,
                 "Do You want to open folder:\n" + directory + "?");
@@ -116,7 +116,7 @@ public class ControllerWorker implements IControllerWorker {
                 .thenRun(() -> log.info("Folder opened successfully: {}", folderPath))
                 .exceptionally(throwable -> {
                     Platform.runLater(() ->
-                            ShowAllert(Alert.AlertType.ERROR, "Error", "Failed to Open Folder", throwable.getMessage()));
+                            ShowAlert(Alert.AlertType.ERROR, "Error", "Failed to Open Folder", throwable.getMessage()));
                     return null;
                 });
     }

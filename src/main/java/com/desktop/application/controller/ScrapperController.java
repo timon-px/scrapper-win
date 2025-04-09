@@ -52,11 +52,13 @@ public class ScrapperController {
 
     @FXML
     private void initialize() {
-        disableNodes = List.of(browse_btn, submit_btn, dir_path_tf, web_url_tf, replace_to_offer_cbx, process_driver_cbx);
+        disableNodes = List.of(browse_btn, submit_btn, dir_path_tf, web_url_tf, replace_to_offer_cbx, process_driver_cbx, scrap_styles_driver_cbx);
 
         processDriverCbxInit(process_driver_cbx);
+
         dirPathTfInit(dir_path_tf);
         browseBtnInit(browse_btn);
+
         progressBarInit(progress_bar);
         submitBtnInit(submit_btn);
     }
@@ -148,7 +150,7 @@ public class ScrapperController {
     private void errorSubmitAction(String responseMessage) {
         controllerWorker.SetLoading(false, disableNodes, progress_bar);
         progress_bar.progressProperty().unbind(); // Unbind when done
-        controllerWorker.ShowAllert(Alert.AlertType.ERROR, "Error!", "Something went wrong!", responseMessage);
+        controllerWorker.ShowAlert(Alert.AlertType.ERROR, "Error!", "Something went wrong!", responseMessage);
     }
 
     private Void errorPlatformRun(Throwable throwable) {

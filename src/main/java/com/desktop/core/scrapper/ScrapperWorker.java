@@ -28,23 +28,24 @@ public class ScrapperWorker {
         return List.of(document);
     }
 
+    public static List<Document> GetDocuments(String url, Proxy proxy) throws IOException {
+        Document document = getJsoupResponse(url, proxy).parse();
+        return List.of(document);
+    }
+
     public static List<Document> GetDocuments(String url, ScrapperRequestDTO.ProcessingOptions processingOptions) throws IOException {
-        if (processingOptions == null || !processingOptions.shouldProcessDriver()) {
-            return GetDocuments(url);
+        if (processingOptions == null) return GetDocuments(url);
+
+        if (!processingOptions.shouldProcessDriver()) {
+            Proxy proxy = processingOptions.getProxy();
+
+            if (!proxy.equals(Proxy.NO_PROXY))
+                return GetDocuments(url, proxy);
+            else
+                return GetDocuments(url);
         }
 
-        ScrapperDriver scrapperDriver = new ScrapperDriver(url);
-        boolean shouldProcessStyles = processingOptions.shouldProcessDriverCustomStyles();
-
-        String baseUri = getJsoupResponse(url).parse().baseUri();
-        List<DriverSaveModel> driverSaveModels = scrapperDriver
-                .RunWebDriver(shouldProcessStyles)
-                .join();
-
-        if (driverSaveModels.isEmpty())
-            throw new RuntimeException("Scrapper hasn't captured any HTML.\nPlease try again");
-
-        return getDriverDocuments(driverSaveModels, baseUri, shouldProcessStyles);
+        return startScrapperDriver(url, processingOptions);
     }
 
     public static String CleanName(String fileName) {
@@ -83,6 +84,21 @@ public class ScrapperWorker {
         return SaveAsEnum.ASSET;
     }
 
+    private static List<Document> startScrapperDriver(String url, ScrapperRequestDTO.ProcessingOptions processingOptions) throws IOException {
+        ScrapperDriver scrapperDriver = getScrapperDriver(url, processingOptions);
+        boolean shouldProcessStyles = processingOptions.shouldProcessDriverCustomStyles();
+
+        String baseUri = getJsoupResponse(url).parse().baseUri();
+        List<DriverSaveModel> driverSaveModels = scrapperDriver
+                .RunWebDriver(shouldProcessStyles)
+                .join();
+
+        if (driverSaveModels.isEmpty())
+            throw new RuntimeException("Scrapper hasn't captured any HTML.\nPlease try again");
+
+        return getDriverDocuments(driverSaveModels, baseUri, shouldProcessStyles);
+    }
+
     private static boolean isAbsoluteUrl(String expression) {
         return expression.matches(RegexConstants.IS_ABSOLUTE_URL_REGEX);
     }
@@ -108,6 +124,11 @@ public class ScrapperWorker {
 
     private static Connection.Response getJsoupResponse(String url, Proxy proxy) throws IOException {
         return getJsoupConnection(url).proxy(proxy).execute();
+    }
+
+    private static ScrapperDriver getScrapperDriver(String url, ScrapperRequestDTO.ProcessingOptions processingOptions) {
+        String proxyString = processingOptions.getProxyString();
+        return new ScrapperDriver(url, proxyString);
     }
 
     private static List<Document> getDriverDocuments(List<DriverSaveModel> driverSaveModels,

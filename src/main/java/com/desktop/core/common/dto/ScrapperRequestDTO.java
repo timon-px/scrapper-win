@@ -1,5 +1,7 @@
 package com.desktop.core.common.dto;
 
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.nio.file.Path;
 
 public class ScrapperRequestDTO {
@@ -30,11 +32,19 @@ public class ScrapperRequestDTO {
         private final boolean replaceHref;
         private final boolean processDriver;
         private final boolean processDriverCustomStyles;
+        private final String proxyHost;
+        private final int proxyPort;
 
         public ProcessingOptions(boolean replaceHref, boolean processDriver, boolean processDriverCustomStyles) {
+            this(replaceHref, processDriver, processDriverCustomStyles, null, -1);
+        }
+
+        public ProcessingOptions(boolean replaceHref, boolean processDriver, boolean processDriverCustomStyles, String proxyHost, int proxyPort) {
             this.replaceHref = replaceHref;
             this.processDriver = processDriver;
             this.processDriverCustomStyles = processDriverCustomStyles;
+            this.proxyHost = proxyHost;
+            this.proxyPort = proxyPort;
         }
 
         public boolean shouldReplaceHref() {
@@ -47,6 +57,21 @@ public class ScrapperRequestDTO {
 
         public boolean shouldProcessDriverCustomStyles() {
             return processDriverCustomStyles;
+        }
+
+        public Proxy getProxy() {
+            try {
+                return new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
+            } catch (Exception e) {
+                return Proxy.NO_PROXY;
+            }
+        }
+
+        public String getProxyString() {
+            if (proxyHost == null || proxyPort < 0)
+                return null;
+
+            return proxyHost + ":" + proxyPort;
         }
     }
 }

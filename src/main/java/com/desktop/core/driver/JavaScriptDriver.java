@@ -33,6 +33,10 @@ public class JavaScriptDriver {
         return isReadyObject instanceof Boolean && (Boolean) isReadyObject;
     }
 
+    public void SetLoadedHtml() {
+        initEvent("loadedHtmlEvent", null);
+    }
+
     public void SetSavedHtml(int amount) {
         initEvent("savedHtmlEvent", String.valueOf(amount));
     }
