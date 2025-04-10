@@ -3,10 +3,10 @@ package com.desktop.application.controller;
 import com.desktop.application.controller.worker.ControllerWorker;
 import com.desktop.application.controller.worker.interfaces.IControllerWorker;
 import com.desktop.application.validation.UniqueizerValidation;
-import com.desktop.dto.UniqueizerRequestDTO;
-import com.desktop.dto.UniqueizerResponseDTO;
-import com.desktop.services.services.classes.UniqueizerService;
-import com.desktop.services.services.interfaces.IUniqueizerService;
+import com.desktop.core.api.UniqueizerService;
+import com.desktop.core.api.interfaces.IUniqueizerService;
+import com.desktop.core.common.dto.UniqueizerRequestDTO;
+import com.desktop.core.common.dto.UniqueizerResponseDTO;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -173,7 +173,7 @@ public class UniqueizerController {
     private void errorSubmitAction(String responseMessage) {
         controllerWorker.SetLoading(false, disableNodes, progress_bar);
         progress_bar.progressProperty().unbind(); // Unbind when done
-        controllerWorker.ShowAllert(Alert.AlertType.ERROR, "Error!", "Something went wrong!", responseMessage);
+        controllerWorker.ShowAlert(Alert.AlertType.ERROR, "Error!", "Something went wrong!", responseMessage);
     }
 
     private Void errorPlatformRun(Throwable throwable) {

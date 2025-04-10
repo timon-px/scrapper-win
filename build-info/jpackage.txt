@@ -4,7 +4,7 @@
     --module-path 'C:\Program Files\Java\jdk-21\lib' \
     --add-modules java.base,java.compiler,java.desktop,java.instrument,java.logging,java.management,java.naming,java.net.http,java.rmi,java.scripting,java.sql,java.xml,jdk.jfr,jdk.unsupported,jdk.crypto.ec \
     --output custom-runtime \
-    --compress=zip-9 \
+    --compress=zip-6 \
     --no-header-files \
     --no-man-pages \
     --strip-debug
@@ -58,7 +58,7 @@ scrapper-1.4-SNAPSHOT
 -------------------------------------------------------
 // INLINE COMMANDS
 
-2. jlink --module-path 'C:\Program Files\Java\jdk-21\lib' --add-modules java.base,java.compiler,java.desktop,java.instrument,java.logging,java.management,java.naming,java.net.http,java.rmi,java.scripting,java.sql,java.xml,jdk.jfr,jdk.unsupported,jdk.crypto.ec --output custom-runtime --compress=zip-9 --no-header-files --no-man-pages --strip-debug
+2. jlink --module-path 'C:\Program Files\Java\jdk-21\lib' --add-modules java.base,java.compiler,java.desktop,java.instrument,java.logging,java.management,java.naming,java.net.http,java.rmi,java.scripting,java.sql,java.xml,jdk.jfr,jdk.unsupported,jdk.crypto.ec --output custom-runtime --compress=zip-6 --no-header-files --no-man-pages --strip-debug
 
 3. jpackage --name scrapper --input target --main-jar scrapper-1.4-SNAPSHOT.jar --main-class com.desktop.Launcher --type exe --dest output --runtime-image custom-runtime --icon .\src\main\resources\assets\icons\favicon.ico --app-version '1.4' --description 'Windows application for web scrapping and uniqueizing sites' --vendor 'TimonPX' --win-dir-chooser --win-shortcut --win-shortcut-prompt --win-menu --win-menu-group scrapper-px --win-upgrade-uuid d1f5ed9a-abed-47ca-81a0-65862021e191
 

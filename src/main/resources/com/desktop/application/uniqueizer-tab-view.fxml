@@ -1,160 +1,172 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.*?>
-<?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.Cursor?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
-
-<VBox fx:id="v_box" alignment="TOP_CENTER" prefHeight="486.0" prefWidth="720.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.desktop.application.controller.UniqueizerController">
+<VBox fx:id="v_box" alignment="TOP_CENTER" prefHeight="486.0" prefWidth="720.0" xmlns="http://javafx.com/javafx/17.0.12"
+      xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.desktop.application.controller.UniqueizerController">
     <BorderPane layoutX="230.0" layoutY="26.0" VBox.vgrow="ALWAYS">
         <top>
-            <Label fx:id="title" alignment="TOP_CENTER" text="uniqueizer" textAlignment="CENTER" textOverrun="CLIP" BorderPane.alignment="CENTER">
+            <Label fx:id="title" alignment="TOP_CENTER" text="uniqueizer" textAlignment="CENTER" textOverrun="CLIP"
+                   BorderPane.alignment="CENTER">
                 <font>
-                    <Font name="Arial" size="48.0" />
+                    <Font name="Arial" size="48.0"/>
                 </font>
                 <BorderPane.margin>
-                    <Insets />
+                    <Insets/>
                 </BorderPane.margin>
                 <padding>
-                    <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                    <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
                 </padding>
             </Label>
         </top>
         <center>
             <GridPane alignment="CENTER" vgap="16.0" BorderPane.alignment="CENTER">
                 <columnConstraints>
-                    <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" percentWidth="72.0" />
+                    <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" percentWidth="72.0"/>
                 </columnConstraints>
                 <rowConstraints>
-                    <RowConstraints minHeight="10.0" />
-                    <RowConstraints minHeight="10.0" />
-                    <RowConstraints minHeight="10.0" />
-                    <RowConstraints minHeight="10.0" />
+                    <RowConstraints minHeight="10.0"/>
+                    <RowConstraints minHeight="10.0"/>
+                    <RowConstraints minHeight="10.0"/>
+                    <RowConstraints minHeight="10.0"/>
                 </rowConstraints>
                 <GridPane alignment="CENTER" vgap="4.0">
                     <columnConstraints>
-                        <ColumnConstraints hgrow="SOMETIMES" percentWidth="50.0" />
-                        <ColumnConstraints hgrow="SOMETIMES" percentWidth="50.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" percentWidth="50.0"/>
+                        <ColumnConstraints hgrow="SOMETIMES" percentWidth="50.0"/>
                     </columnConstraints>
                     <rowConstraints>
-                        <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
-                        <RowConstraints minHeight="10.0" vgrow="ALWAYS" />
-                        <RowConstraints minHeight="10.0" vgrow="ALWAYS" />
+                        <RowConstraints minHeight="10.0" vgrow="SOMETIMES"/>
+                        <RowConstraints minHeight="10.0" vgrow="ALWAYS"/>
+                        <RowConstraints minHeight="10.0" vgrow="ALWAYS"/>
                     </rowConstraints>
                     <Label text="file path:">
                         <font>
-                            <Font name="JetBrains Mono Regular" size="14.0" />
+                            <Font name="JetBrains Mono Regular" size="14.0"/>
                         </font>
                     </Label>
-                    <Button fx:id="browse_file_btn" alignment="CENTER" mnemonicParsing="false" text="Browse" textAlignment="CENTER" GridPane.columnIndex="1" GridPane.halignment="RIGHT">
+                    <Button fx:id="browse_file_btn" alignment="CENTER" mnemonicParsing="false" text="Browse"
+                            textAlignment="CENTER" GridPane.columnIndex="1" GridPane.halignment="RIGHT">
                         <cursor>
-                            <Cursor fx:constant="HAND" />
+                            <Cursor fx:constant="HAND"/>
                         </cursor>
                         <font>
-                            <Font name="JetBrains Mono Medium" size="12.0" />
+                            <Font name="JetBrains Mono Medium" size="12.0"/>
                         </font>
                     </Button>
-                    <TextField fx:id="file_path_tf" promptText="C:\" GridPane.columnSpan="2147483647" GridPane.rowIndex="1">
+                    <TextField fx:id="file_path_tf" promptText="C:\" GridPane.columnSpan="2147483647"
+                               GridPane.rowIndex="1">
                         <font>
-                            <Font name="Inter Regular" size="14.0" />
+                            <Font name="Inter Regular" size="14.0"/>
                         </font>
                     </TextField>
-                    <Label fx:id="file_path_error_lbl" textFill="RED" GridPane.columnSpan="2147483647" GridPane.rowIndex="2">
+                    <Label fx:id="file_path_error_lbl" textFill="RED" GridPane.columnSpan="2147483647"
+                           GridPane.rowIndex="2">
                         <font>
-                            <Font name="JetBrains Mono Regular" size="12.0" />
+                            <Font name="JetBrains Mono Regular" size="12.0"/>
                         </font>
                     </Label>
                 </GridPane>
                 <GridPane alignment="CENTER" vgap="4.0" GridPane.rowIndex="2">
                     <columnConstraints>
-                        <ColumnConstraints hgrow="SOMETIMES" percentWidth="50.0" />
-                        <ColumnConstraints hgrow="SOMETIMES" percentWidth="50.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" percentWidth="50.0"/>
+                        <ColumnConstraints hgrow="SOMETIMES" percentWidth="50.0"/>
                     </columnConstraints>
                     <rowConstraints>
-                        <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
-                        <RowConstraints minHeight="10.0" vgrow="ALWAYS" />
-                        <RowConstraints minHeight="10.0" vgrow="ALWAYS" />
+                        <RowConstraints minHeight="10.0" vgrow="SOMETIMES"/>
+                        <RowConstraints minHeight="10.0" vgrow="ALWAYS"/>
+                        <RowConstraints minHeight="10.0" vgrow="ALWAYS"/>
                     </rowConstraints>
                     <Label text="save path:">
                         <font>
-                            <Font name="JetBrains Mono Regular" size="14.0" />
+                            <Font name="JetBrains Mono Regular" size="14.0"/>
                         </font>
                     </Label>
-                    <Button fx:id="browse_save_btn" alignment="CENTER" mnemonicParsing="false" text="Browse" textAlignment="CENTER" GridPane.columnIndex="1" GridPane.halignment="RIGHT">
+                    <Button fx:id="browse_save_btn" alignment="CENTER" mnemonicParsing="false" text="Browse"
+                            textAlignment="CENTER" GridPane.columnIndex="1" GridPane.halignment="RIGHT">
                         <cursor>
-                            <Cursor fx:constant="HAND" />
+                            <Cursor fx:constant="HAND"/>
                         </cursor>
                         <font>
-                            <Font name="JetBrains Mono Medium" size="12.0" />
+                            <Font name="JetBrains Mono Medium" size="12.0"/>
                         </font>
                     </Button>
-                    <TextField fx:id="save_path_tf" promptText="C:\" GridPane.columnSpan="2147483647" GridPane.rowIndex="1">
+                    <TextField fx:id="save_path_tf" promptText="C:\" GridPane.columnSpan="2147483647"
+                               GridPane.rowIndex="1">
                         <font>
-                            <Font name="Inter Regular" size="14.0" />
+                            <Font name="Inter Regular" size="14.0"/>
                         </font>
                     </TextField>
-                    <Label fx:id="save_path_error_lbl" textFill="RED" GridPane.columnSpan="2147483647" GridPane.rowIndex="2">
+                    <Label fx:id="save_path_error_lbl" textFill="RED" GridPane.columnSpan="2147483647"
+                           GridPane.rowIndex="2">
                         <font>
-                            <Font name="JetBrains Mono Regular" size="12.0" />
+                            <Font name="JetBrains Mono Regular" size="12.0"/>
                         </font>
                     </Label>
                 </GridPane>
-                <Separator GridPane.rowIndex="1" />
+                <Separator GridPane.rowIndex="1"/>
                 <GridPane alignment="CENTER" GridPane.rowIndex="3">
                     <columnConstraints>
-                        <ColumnConstraints hgrow="SOMETIMES" percentWidth="50.0" />
-                        <ColumnConstraints hgrow="SOMETIMES" percentWidth="50.0" />
+                        <ColumnConstraints hgrow="SOMETIMES" percentWidth="50.0"/>
+                        <ColumnConstraints hgrow="SOMETIMES" percentWidth="50.0"/>
                     </columnConstraints>
-                    <CheckBox fx:id="replace_to_offer_cbx" mnemonicParsing="false" text="Replace href with {offer}" textAlignment="CENTER" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS">
+                    <CheckBox fx:id="replace_to_offer_cbx" mnemonicParsing="false" text="Replace href with {offer}"
+                              textAlignment="CENTER" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS">
                         <GridPane.margin>
-                            <Insets />
+                            <Insets/>
                         </GridPane.margin>
                         <font>
-                            <Font name="JetBrains Mono Medium" size="12.0" />
+                            <Font name="JetBrains Mono Medium" size="12.0"/>
                         </font>
                     </CheckBox>
-                    <CheckBox fx:id="replace_chars_cbx" layoutX="10.0" layoutY="14.0" mnemonicParsing="false" text="Replace chars (latin, cyrillic)" textAlignment="CENTER" GridPane.columnIndex="1" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS">
+                    <CheckBox fx:id="replace_chars_cbx" layoutX="10.0" layoutY="14.0" mnemonicParsing="false"
+                              text="Replace chars (latin, cyrillic)" textAlignment="CENTER" GridPane.columnIndex="1"
+                              GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS">
                         <font>
-                            <Font name="JetBrains Mono Medium" size="12.0" />
+                            <Font name="JetBrains Mono Medium" size="12.0"/>
                         </font>
                     </CheckBox>
-               <rowConstraints>
-                  <RowConstraints />
-               </rowConstraints>
-               <opaqueInsets>
-                  <Insets />
-               </opaqueInsets>
-               <GridPane.margin>
-                  <Insets top="6.0" />
-               </GridPane.margin>
+                    <rowConstraints>
+                        <RowConstraints/>
+                    </rowConstraints>
+                    <opaqueInsets>
+                        <Insets/>
+                    </opaqueInsets>
+                    <GridPane.margin>
+                        <Insets top="6.0"/>
+                    </GridPane.margin>
                 </GridPane>
             </GridPane>
         </center>
         <opaqueInsets>
-            <Insets />
+            <Insets/>
         </opaqueInsets>
         <bottom>
             <GridPane alignment="CENTER" vgap="26.0" BorderPane.alignment="CENTER">
                 <columnConstraints>
-                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" />
+                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0"/>
                 </columnConstraints>
                 <rowConstraints>
-                    <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
-                    <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
+                    <RowConstraints minHeight="10.0" vgrow="SOMETIMES"/>
+                    <RowConstraints minHeight="10.0" vgrow="SOMETIMES"/>
                 </rowConstraints>
                 <padding>
-                    <Insets bottom="16.0" />
+                    <Insets bottom="16.0"/>
                 </padding>
-                <Button fx:id="submit_btn" mnemonicParsing="false" text="Submit" GridPane.halignment="CENTER" GridPane.valignment="CENTER">
+                <Button fx:id="submit_btn" mnemonicParsing="false" text="Submit" GridPane.halignment="CENTER"
+                        GridPane.valignment="CENTER">
                     <font>
-                        <Font name="Fira Code Regular" size="18.0" />
+                        <Font name="Fira Code Regular" size="18.0"/>
                     </font>
                     <cursor>
-                        <Cursor fx:constant="HAND" />
+                        <Cursor fx:constant="HAND"/>
                     </cursor>
                 </Button>
-                <ProgressBar fx:id="progress_bar" prefWidth="192.0" progress="0.0" GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER" />
+                <ProgressBar fx:id="progress_bar" prefWidth="192.0" progress="0.0" GridPane.halignment="CENTER"
+                             GridPane.rowIndex="1" GridPane.valignment="CENTER"/>
             </GridPane>
         </bottom>
     </BorderPane>

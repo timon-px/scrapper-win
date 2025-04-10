@@ -3,14 +3,15 @@ package com.desktop.application.controller;
 import com.desktop.application.controller.worker.ControllerWorker;
 import com.desktop.application.controller.worker.interfaces.IControllerWorker;
 import com.desktop.application.validation.ScrapperValidation;
-import com.desktop.dto.ScrapperRequestDTO;
-import com.desktop.dto.ScrapperResponseDTO;
-import com.desktop.services.services.classes.ScrapperService;
-import com.desktop.services.services.interfaces.IScrapperService;
+import com.desktop.core.api.ScrapperService;
+import com.desktop.core.api.interfaces.IScrapperService;
+import com.desktop.core.common.dto.ScrapperRequestDTO;
+import com.desktop.core.common.dto.ScrapperResponseDTO;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,15 +48,31 @@ public class ScrapperController {
     private CheckBox replace_to_offer_cbx;
     @FXML
     private CheckBox process_driver_cbx;
+    @FXML
+    private CheckBox scrap_styles_driver_cbx;
 
     @FXML
     private void initialize() {
-        disableNodes = List.of(browse_btn, submit_btn, dir_path_tf, web_url_tf, replace_to_offer_cbx, process_driver_cbx);
+        disableNodes = List.of(browse_btn, submit_btn, dir_path_tf, web_url_tf, replace_to_offer_cbx, process_driver_cbx, scrap_styles_driver_cbx);
+
+        processDriverCbxInit(process_driver_cbx);
 
         dirPathTfInit(dir_path_tf);
+        webUrlTfInit(web_url_tf);
         browseBtnInit(browse_btn);
+
         progressBarInit(progress_bar);
         submitBtnInit(submit_btn);
+    }
+
+    private void processDriverCbxInit(CheckBox cbx) {
+        scrap_styles_driver_cbx.setDisable(true);
+        cbx.setOnAction(event -> {
+            if (!cbx.isSelected()) {
+                scrap_styles_driver_cbx.setDisable(true);
+                scrap_styles_driver_cbx.setSelected(false);
+            } else scrap_styles_driver_cbx.setDisable(false);
+        });
     }
 
     private void submitBtnInit(Button button) {
@@ -74,6 +91,12 @@ public class ScrapperController {
         FileSystemView view = FileSystemView.getFileSystemView();
         File file = view.getHomeDirectory();
         dirPathTf.setText(file.getAbsolutePath());
+    }
+
+    private void webUrlTfInit(TextField webUrlTf) {
+        webUrlTf.setOnKeyReleased(event -> {
+            if (event.getCode() == KeyCode.ENTER) handleSubmit();
+        });
     }
 
     private void handleSubmit() {
@@ -102,8 +125,10 @@ public class ScrapperController {
     private ScrapperRequestDTO.ProcessingOptions getProcessingOptions() {
         boolean shouldReplaceHref = replace_to_offer_cbx.isSelected();
         boolean shouldProcessDriver = process_driver_cbx.isSelected();
+        boolean shouldProcessDriverCustomStyles = scrap_styles_driver_cbx.isSelected();
+
         return new ScrapperRequestDTO
-                .ProcessingOptions(shouldReplaceHref, shouldProcessDriver, true);
+                .ProcessingOptions(shouldReplaceHref, shouldProcessDriver, shouldProcessDriverCustomStyles);
     }
 
     private boolean validateFields(String dirPath, String webUrl) {
@@ -133,7 +158,7 @@ public class ScrapperController {
     private void errorSubmitAction(String responseMessage) {
         controllerWorker.SetLoading(false, disableNodes, progress_bar);
         progress_bar.progressProperty().unbind(); // Unbind when done
-        controllerWorker.ShowAllert(Alert.AlertType.ERROR, "Error!", "Something went wrong!", responseMessage);
+        controllerWorker.ShowAlert(Alert.AlertType.ERROR, "Error!", "Something went wrong!", responseMessage);
     }
 
     private Void errorPlatformRun(Throwable throwable) {

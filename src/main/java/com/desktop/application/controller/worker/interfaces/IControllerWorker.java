@@ -22,7 +22,7 @@ public interface IControllerWorker {
 
     List<File> GetFilesFromString(String filesString);
 
-    Optional<ButtonType> ShowAllert(Alert.AlertType type, String title, String header, String content);
+    Optional<ButtonType> ShowAlert(Alert.AlertType type, String title, String header, String content);
 
     void OpenDownloadedFolderDialog(Path directory, String message);
 
