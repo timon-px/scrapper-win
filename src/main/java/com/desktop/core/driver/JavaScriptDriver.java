@@ -41,10 +41,6 @@ public class JavaScriptDriver {
         initEvent("savedHtmlEvent", String.valueOf(amount));
     }
 
-    public void UpdateAmountCaptures(int amount) {
-        initEvent("updateAmountHtmlEvent", String.valueOf(amount));
-    }
-
     public String GetAllDocumentStyles() {
         Object allStylesObject = js.executeScript("return window.getStylesheetsString_scrapper();");
         if (allStylesObject instanceof String) return (String) allStylesObject;

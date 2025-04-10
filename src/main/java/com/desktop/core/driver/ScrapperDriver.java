@@ -114,6 +114,7 @@ public class ScrapperDriver {
                              JavaScriptDriver javaScriptDriver,
                              CapturePageWorker capturePageWorker) {
 
+        // Notify extension that driver is working
         javaScriptDriver.SetLoadedHtml();
 
         String lastHtml = driver.getPageSource();
@@ -122,9 +123,6 @@ public class ScrapperDriver {
 
         int capturesAmount = capturePageWorker.GetAmount();
         if (isReadyToSave) javaScriptDriver.SetSavedHtml(capturesAmount);
-
-        // update count if changed page
-        javaScriptDriver.UpdateAmountCaptures(capturesAmount);
     }
 
     private void closeDriver(DriverWithProfile driverWithProfile) {
@@ -135,7 +133,7 @@ public class ScrapperDriver {
         }
     }
 
-    // Optional: Shutdown hook to clean up executor on JVM exit
+    // Shutdown hook to clean up executor on JVM exit
     static {
         Runtime.getRuntime().addShutdownHook(new Thread(EXECUTOR::shutdown));
     }
