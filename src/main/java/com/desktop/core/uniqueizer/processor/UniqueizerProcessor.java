@@ -39,7 +39,7 @@ public class UniqueizerProcessor implements IDocumentProcess {
         return processNodesAsync(document, progress)
                 .thenCompose(unused -> processEmptyDivs(document))
                 .thenCompose(unused -> processEmptyScript(document))
-                .thenRun(() -> progress.set(1.0));
+                .thenRun(() -> DocumentWorker.UpdateProgress(progress, 1.0));
     }
 
     private CompletableFuture<Void> processNodesAsync(Document document, DoubleProperty progress) {
@@ -58,7 +58,8 @@ public class UniqueizerProcessor implements IDocumentProcess {
 
                             incrementTraversedProgress(progressValue, progressStep, progress);
                         }))
-                .thenCompose(unused -> textUniqueizer.Finish());
+                .thenCompose(unused -> textUniqueizer.Finish())
+                .thenRun(() -> DocumentWorker.UpdateProgress(progress, 0.95));
     }
 
     private CompletableFuture<Integer> getNodesAmount(Document document) {

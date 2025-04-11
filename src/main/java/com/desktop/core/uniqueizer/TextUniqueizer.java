@@ -41,10 +41,8 @@ public class TextUniqueizer {
     }
 
     public void ProcessNode(TextNode textNode) {
-        if (processingOptions.shouldProcessChars()) replaceChars(textNode);
-
-        if (SHOULD_PROCESS_TEXT_UNIQUE)
-            registerOnUniqueize(textNode);
+        if (SHOULD_PROCESS_TEXT_UNIQUE) registerOnUniqueize(textNode);
+        else if (processingOptions.shouldProcessChars()) replaceChars(textNode);
     }
 
     public CompletableFuture<Void> Finish() {
@@ -130,14 +128,23 @@ public class TextUniqueizer {
     }
 
     private void replaceText(List<UniqueizeHtmlEntry> textEntries) {
-        for (UniqueizeHtmlEntry textEntry : textEntries) {
-            String selector = UniqueizerConstants.UNIQUEIZE_NODE_NAME + getDataAttrSelector(textEntry.getKey());
-            Element el = document.select(selector).first();
-            if (el == null) continue;
+        for (int i = 0; i < textEntries.size(); i++) {
+            UniqueizeHtmlEntry textEntry = textEntries.get(i);
+            UniqueizeHtmlEntry oldEntry = documentTextEntries.get(i);
 
-            TextNode textNode = new TextNode(textEntry.getValue());
-            el.replaceWith(textNode);
+            if (!processTextEntry(textEntry))
+                processTextEntry(oldEntry);
         }
+    }
+
+    private boolean processTextEntry(UniqueizeHtmlEntry textEntry) {
+        String selector = UniqueizerConstants.UNIQUEIZE_NODE_NAME + getDataAttrSelector(textEntry.getKey());
+        Element el = document.select(selector).first();
+        if (el == null) return false;
+
+        TextNode textNode = new TextNode(textEntry.getValue());
+        el.replaceWith(textNode);
+        return true;
     }
 
     private Void handleError(Throwable throwable) {
