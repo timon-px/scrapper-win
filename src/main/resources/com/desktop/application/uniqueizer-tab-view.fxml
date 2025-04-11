@@ -108,7 +108,7 @@
                     </Label>
                 </GridPane>
                 <Separator GridPane.rowIndex="1"/>
-                <GridPane alignment="CENTER" GridPane.rowIndex="3">
+                <GridPane alignment="CENTER" hgap="16.0" GridPane.rowIndex="3">
                     <columnConstraints>
                         <ColumnConstraints hgrow="SOMETIMES" percentWidth="50.0"/>
                         <ColumnConstraints hgrow="SOMETIMES" percentWidth="50.0"/>

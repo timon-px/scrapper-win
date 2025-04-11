@@ -1,14 +1,15 @@
 package com.desktop.core.uniqueizer.processor;
 
-import com.desktop.core.common.dto.UniqueizerRequestDTO;
 import com.desktop.core.common.constants.HtmlConstants;
 import com.desktop.core.common.constants.RegexConstants;
 import com.desktop.core.common.constants.UniqueizerConstants;
+import com.desktop.core.common.dto.UniqueizerRequestDTO;
+import com.desktop.core.scrapper.StylesheetWorker;
 import com.desktop.core.scrapper.processor.interfaces.IDocumentProcess;
-import com.desktop.core.uniqueizer.CharSwapper;
+import com.desktop.core.uniqueizer.TextUniqueizer;
 import com.desktop.core.uniqueizer.UniqueizerWorker;
 import com.desktop.core.utils.DocumentWorker;
-import com.desktop.core.scrapper.StylesheetWorker;
+import com.google.common.util.concurrent.AtomicDouble;
 import javafx.beans.property.DoubleProperty;
 import org.apache.commons.io.FilenameUtils;
 import org.jsoup.nodes.Document;
@@ -42,19 +43,22 @@ public class UniqueizerProcessor implements IDocumentProcess {
     }
 
     private CompletableFuture<Void> processNodesAsync(Document document, DoubleProperty progress) {
-        AtomicInteger processedNodes = new AtomicInteger(0);
+        AtomicDouble progressValue = new AtomicDouble(0.0);
+        TextUniqueizer textUniqueizer = new TextUniqueizer(document, processingOptions);
 
-        return getNodesAmount(document).thenAccept(totalNodes ->
-                document.traverse((node, depth) -> {
-                    // (if) Text replacement
-                    if (processingOptions.shouldProcessChars() && node instanceof TextNode textNode) {
-                        String transformedText = CharSwapper.ConvertChars(textNode.getWholeText());
-                        textNode.text(transformedText);
-                    } else if (node instanceof Element element) processNodeElement(element);
+        return getNodesAmount(document)
+                .thenApply(totalNodes -> UniqueizerConstants.MAX_PROCESS_NODES_PROGRESS / totalNodes)
+                .thenAccept(progressStep ->
+                        document.traverse((node, depth) -> {
+                            if (node instanceof TextNode textNode) {
+                                textUniqueizer.ProcessNode(textNode);
+                            } else if (node instanceof Element element) {
+                                processNodeElement(element);
+                            }
 
-                    // Update progress after processing each node
-                    incrementTraversedProgress(processedNodes, totalNodes, progress);
-                }));
+                            incrementTraversedProgress(progressValue, progressStep, progress);
+                        }))
+                .thenCompose(unused -> textUniqueizer.Finish());
     }
 
     private CompletableFuture<Integer> getNodesAmount(Document document) {
@@ -201,10 +205,8 @@ public class UniqueizerProcessor implements IDocumentProcess {
         }
     }
 
-    private void incrementTraversedProgress(AtomicInteger processedNodes, int totalNodes, DoubleProperty progress) {
-        int completed = processedNodes.incrementAndGet();
-        if (completed % 100 != 0 && completed != totalNodes) return;
-        double progressValue = totalNodes > 0 ? DocumentWorker.GetProgressIncrement(completed, totalNodes) : 1.0;
-        DocumentWorker.UpdateProgress(progress, progressValue);
+    private void incrementTraversedProgress(AtomicDouble progressValue, double progressStep, DoubleProperty progress) {
+        double newProgress = progressValue.updateAndGet(pr -> pr + progressStep);
+        DocumentWorker.UpdateProgress(progress, newProgress);
     }
 }

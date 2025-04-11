@@ -22,7 +22,11 @@ public class ScrapperApplication extends Application {
         stage.setTitle("Scrapper");
         setFavicon(stage);
 
-        stage.setResizable(false);
+        stage.setMaxWidth(1280);
+        stage.setMaxHeight(720);
+
+        stage.setMinWidth(680);
+        stage.setMinHeight(520);
 
         stage.setScene(scene);
         stage.show();

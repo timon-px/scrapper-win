@@ -5,7 +5,7 @@ import com.desktop.core.common.constants.ScrapperConstants;
 import com.desktop.core.common.dto.ScrapperRequestDTO;
 import com.desktop.core.common.dto.ScrapperResponseDTO;
 import com.desktop.core.common.model.FileSaveModel;
-import com.desktop.core.scrapper.ProcessingContext;
+import com.desktop.core.common.model.ProcessingContext;
 import com.desktop.core.scrapper.ScrapperWorker;
 import com.desktop.core.scrapper.processor.FilesProcessor;
 import com.desktop.core.scrapper.processor.HtmlProcessor;
