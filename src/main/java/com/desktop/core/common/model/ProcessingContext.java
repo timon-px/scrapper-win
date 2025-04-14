@@ -1,7 +1,6 @@
-package com.desktop.core.scrapper;
+package com.desktop.core.common.model;
 
 import com.desktop.core.common.dto.ScrapperRequestDTO;
-import com.desktop.core.common.model.FileSaveModel;
 import javafx.beans.property.SimpleDoubleProperty;
 
 import java.nio.file.Path;

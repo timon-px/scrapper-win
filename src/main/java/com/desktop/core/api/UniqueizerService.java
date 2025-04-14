@@ -71,21 +71,19 @@ public class UniqueizerService implements IUniqueizerService {
         );
 
         return CompletableFuture.supplyAsync(() -> {
-            try {
-                List<SimpleDoubleProperty> fileProgresses = bindProgresses(files);
+                    List<SimpleDoubleProperty> fileProgresses = bindProgresses(files);
 
-                List<CompletableFuture<Path>> processingFutures = new ArrayList<>();
-                for (int i = 0; i < files.size(); i++) {
-                    File file = files.get(i);
-                    SimpleDoubleProperty fileProgress = fileProgresses.get(i);
-                    processingFutures.add(processSingleFile(file, processingOptions, storageWorker, fileProgress));
-                }
+                    List<CompletableFuture<Path>> processingFutures = new ArrayList<>();
+                    for (int i = 0; i < files.size(); i++) {
+                        File file = files.get(i);
+                        SimpleDoubleProperty fileProgress = fileProgresses.get(i);
+                        processingFutures.add(processSingleFile(file, processingOptions, storageWorker, fileProgress));
+                    }
 
-                return aggregateResults(processingFutures);
-            } finally {
-                executor.shutdown();
-            }
-        }, executor);
+                    return aggregateResults(processingFutures);
+                }, executor)
+                .exceptionally(this::handleProcessingError)
+                .whenComplete((result, throwable) -> executor.shutdown());
     }
 
     // Process individual file
@@ -142,6 +140,12 @@ public class UniqueizerService implements IUniqueizerService {
                 successfulPaths,
                 message
         );
+    }
+
+    // Handle errors during processing
+    private UniqueizerResponseDTO handleProcessingError(Throwable ex) {
+        log.error("Error during web processing", ex);
+        return new UniqueizerResponseDTO(false, "Error occurred while processing:\n" + ex.getCause().getMessage());
     }
 
     // Bind progresses for several documents

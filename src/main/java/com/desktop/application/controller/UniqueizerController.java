@@ -21,6 +21,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 public class UniqueizerController {
@@ -129,10 +130,10 @@ public class UniqueizerController {
             List<Path> directories = response.getDirectories();
             String message = response.getMessage();
 
-            if (!directories.isEmpty() && response.isSuccess())
+            if (Objects.nonNull(directories) && !directories.isEmpty() && response.isSuccess())
                 successSubmitAction(directories.getFirst(), message);
             else
-                errorPlatformRun(new Throwable(message));
+                errorPlatformRun(message);
         })).exceptionally(this::errorPlatformRun);
     }
 
@@ -174,6 +175,10 @@ public class UniqueizerController {
         controllerWorker.SetLoading(false, disableNodes, progress_bar);
         progress_bar.progressProperty().unbind(); // Unbind when done
         controllerWorker.ShowAlert(Alert.AlertType.ERROR, "Error!", "Something went wrong!", responseMessage);
+    }
+
+    private void errorPlatformRun(String throwable) {
+        Platform.runLater(() -> errorSubmitAction(throwable == null ? "Unknown error occurred!" : throwable));
     }
 
     private Void errorPlatformRun(Throwable throwable) {
