@@ -21,5 +21,5 @@ public class UniqueizerConstants {
     public static final String UNIQUEIZE_NODE_NAME = "uniquenode";
     public static final String UNIQUEIZE_NODE_DATA_ATTR = "data-node-id";
 
-    public static final String UNIQUEIZER_PROP_API_KEY = "uniqueizer.api.url";
+    public static final String PROP_KEY_UNIQUEIZER_API = "uniqueizer.api.url";
 }

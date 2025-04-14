@@ -33,7 +33,7 @@ public class TextUniqueizer {
     private final UniqueizerRequestDTO.ProcessingOptions processingOptions;
     private final List<UniqueizeHtmlEntry> documentTextEntries = Collections.synchronizedList(new ArrayList<>());
 
-    private static final boolean SHOULD_PROCESS_TEXT_UNIQUE = true;
+    private static final boolean SHOULD_PROCESS_TEXT_UNIQUE = false;
 
     public TextUniqueizer(Document document, UniqueizerRequestDTO.ProcessingOptions processingOptions) {
         this.document = document;
@@ -83,7 +83,7 @@ public class TextUniqueizer {
     }
 
     private HttpRequest buildRequest(String json) {
-        String api = PropertiesWorker.getProperty(UniqueizerConstants.UNIQUEIZER_PROP_API_KEY);
+        String api = PropertiesWorker.getProperty(UniqueizerConstants.PROP_KEY_UNIQUEIZER_API);
         if (Strings.isNullOrEmpty(api)) throw new IllegalArgumentException("Text uniqueizer API string is empty");
 
         URI uri = URI.create(api);
