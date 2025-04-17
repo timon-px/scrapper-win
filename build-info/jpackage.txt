@@ -43,8 +43,6 @@
     --description 'Windows application for web scrapping and uniqueizing sites' \
     --vendor 'TimonPX'
 
-// !! UPGRADE --win-upgrade-uuid ON EVERY BUID
-
 // check on custom-runtime
 .\custom-runtime\bin\java -jar .\target\scrapper-1.4-SNAPSHOT.jar
 
@@ -53,7 +51,6 @@ jdeps -s .\target\scrapper-1.4-SNAPSHOT.jar
 
 // can be another name
 scrapper-1.4-SNAPSHOT
-
 
 -------------------------------------------------------
 // INLINE COMMANDS

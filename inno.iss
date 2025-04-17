@@ -2,9 +2,10 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Scrapper"
-#define MyAppVersion "1.4"
+#define MyAppVersion "1.4.1"
 #define MyAppPublisher "TimonPX"
 #define MyAppExeName "scrapper.exe"
+#define MyAppIcon "src\main\resources\assets\icons\favicon.ico"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
@@ -28,9 +29,9 @@ DefaultGroupName={#MyAppName}
 AllowNoIcons=yes
 ; Remove the following line to run in administrative install mode (install for all users).
 PrivilegesRequired=lowest
-OutputDir=C:\Users\win10\Desktop\scrapper-main\inno-setup
+OutputDir=installer
 OutputBaseFilename=Scrapper-Setup
-SetupIconFile=C:\Users\win10\Desktop\scrapper-main\src\main\resources\assets\icons\favicon.ico
+SetupIconFile={#MyAppIcon}
 SolidCompression=yes
 WizardStyle=modern
 
@@ -41,9 +42,9 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "C:\Users\win10\Desktop\scrapper-main\app-bundle\scrapper\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Users\win10\Desktop\scrapper-main\app-bundle\scrapper\app\*"; DestDir: "{app}\app"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "C:\Users\win10\Desktop\scrapper-main\app-bundle\scrapper\runtime\*"; DestDir: "{app}\runtime"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "app-bundle\scrapper\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "app-bundle\scrapper\app\*"; DestDir: "{app}\app"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "app-bundle\scrapper\runtime\*"; DestDir: "{app}\runtime"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 ; NOTE: Removes all files before updating
