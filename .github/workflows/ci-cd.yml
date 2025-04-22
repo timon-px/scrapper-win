@@ -14,7 +14,7 @@ jobs:
       JAR_MAIN_CLASS: com.desktop.Launcher
       JLINK_DEPS: java.base,java.compiler,java.desktop,java.instrument,java.logging,java.management,java.naming,java.net.http,java.rmi,java.scripting,java.sql,java.xml,jdk.jfr,jdk.unsupported,jdk.crypto.ec
       JPACKAGE_PROPS_WIN: --type app-image --icon src/main/resources/assets/icons/favicon.ico
-      JPACKAGE_PROPS_LINUX: --type deb --icon src/main/resources/assets/icons/favicon-linux.png --linux-shortcut --linux-menu-group Utility;Network;Java;
+      JPACKAGE_PROPS_LINUX: --type deb --icon src/main/resources/assets/icons/favicon-linux.png --linux-shortcut --linux-menu-group Utility;Network;Java; --resource-dir build-info/linux/
       JPACKAGE_PROPS_MACOS: --type dmg --icon src/main/resources/assets/icons/favicon-mac.icns --mac-package-identifier com.timonpx.scrapper
 
     strategy:
