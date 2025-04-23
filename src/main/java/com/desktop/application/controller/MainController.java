@@ -18,10 +18,19 @@ public class MainController {
 
     @FXML
     private void initialize() throws IOException {
-        FXMLLoader scrapperTab = new FXMLLoader(ScrapperApplication.class.getResource("scrapper-tab-view.fxml"));
-        web_parser_tab.setContent(scrapperTab.load());
+        loadTabContent(web_parser_tab, "scrapper-tab-view.fxml");
+        loadTabContent(uniqueizer_tab, "uniqueizer-tab-view.fxml");
+    }
 
-        FXMLLoader uniqueizerTab = new FXMLLoader(ScrapperApplication.class.getResource("uniqueizer-tab-view.fxml"));
-        uniqueizer_tab.setContent(uniqueizerTab.load());
+    /**
+     * Loads content for a tab from the specified FXML file.
+     *
+     * @param tab      The tab to set content for.
+     * @param fxmlPath The path to the FXML file.
+     * @throws IOException If the FXML file cannot be loaded.
+     */
+    private void loadTabContent(Tab tab, String fxmlPath) throws IOException {
+        FXMLLoader loader = new FXMLLoader(ScrapperApplication.class.getResource(fxmlPath));
+        tab.setContent(loader.load());
     }
 }

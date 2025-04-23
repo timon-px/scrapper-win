@@ -1,10 +1,12 @@
 package com.desktop.application;
 
 import javafx.geometry.Pos;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
+import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import org.slf4j.Logger;
@@ -22,6 +24,8 @@ public class SplashScreen {
     private static final String SPLASH_CSS = "splash.css";
     private static final String LOGO_PATH = ASSETS_DIR + "icons/favicon-linux.png";
     private static final String FAVICON_PATH = ASSETS_DIR + "icons/favicon.png";
+    private static final Integer DEFAULT_STAGE_WIDTH = 412;
+    private static final Integer DEFAULT_STAGE_HEIGHT = 216;
 
     private final Stage splashStage;
 
@@ -34,18 +38,35 @@ public class SplashScreen {
      * Initializes the splash screen with layout, styles, and favicon.
      */
     private void initialize() {
-        VBox splashLayout = new VBox(10);
+        VBox splashLayout = new VBox();
         splashLayout.setAlignment(Pos.CENTER);
 
         applyLogo(splashLayout, LOGO_PATH);
 
-        Scene splashScene = new Scene(splashLayout, 412, 216);
+        Scene splashScene = new Scene(splashLayout, DEFAULT_STAGE_WIDTH, DEFAULT_STAGE_HEIGHT);
 
         applyStylesheet(splashScene, SPLASH_CSS);
         applyFavicon();
 
         splashStage.setScene(splashScene);
         splashStage.initStyle(StageStyle.UNDECORATED);
+
+        centerStageOnScreen();
+    }
+
+    /**
+     * Centers the splash screen stage on the primary screen.
+     */
+    private void centerStageOnScreen() {
+        Rectangle2D primaryScreenBounds = Screen.getPrimary().getVisualBounds();
+        double screenWidth = primaryScreenBounds.getWidth();
+        double screenHeight = primaryScreenBounds.getHeight();
+
+        double centerX = primaryScreenBounds.getMinX() + (screenWidth - DEFAULT_STAGE_WIDTH) / 2;
+        double centerY = primaryScreenBounds.getMinY() + (screenHeight - DEFAULT_STAGE_HEIGHT) / 2;
+
+        splashStage.setX(centerX);
+        splashStage.setY(centerY);
     }
 
     /**

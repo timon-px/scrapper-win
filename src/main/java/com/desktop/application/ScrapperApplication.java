@@ -7,6 +7,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.image.Image;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,8 +34,9 @@ public class ScrapperApplication extends Application {
             try {
                 Scene mainScene = loadMainScene();
                 Platform.runLater(() -> {
-                    splashScreen.close();
                     configurePrimaryStage(stage, mainScene);
+
+                    stage.setOnShown(event -> splashScreen.close());
                     stage.show();
                 });
             } catch (IOException e) {
@@ -59,6 +61,8 @@ public class ScrapperApplication extends Application {
     private Scene loadMainScene() throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(MAIN_FXML));
         Scene scene = new Scene(fxmlLoader.load(), 720, 540);
+        scene.setFill(Color.TRANSPARENT);
+
         for (String stylesheet : MAIN_STYLESHEETS) {
             applyStylesheet(scene, stylesheet);
         }
