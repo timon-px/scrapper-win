@@ -9,8 +9,8 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
 
-public class FileExplorerHelper {
-    private static final Logger log = LoggerFactory.getLogger(FileExplorerHelper.class);
+public class FileExplorerUtils {
+    private static final Logger log = LoggerFactory.getLogger(FileExplorerUtils.class);
 
     public static CompletableFuture<Void> OpenFolderAsync(Path folderPath) {
         return CompletableFuture.runAsync(() -> {
