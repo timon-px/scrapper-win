@@ -1,7 +1,8 @@
 package com.desktop.application.controller.worker;
 
 import com.desktop.application.controller.worker.interfaces.IControllerWorker;
-import com.desktop.application.utils.FileExplorerHelper;
+import com.desktop.application.utils.AlertUtils;
+import com.desktop.application.utils.FileExplorerUtils;
 import com.desktop.core.common.constants.UniqueizerConstants;
 import javafx.application.Platform;
 import javafx.scene.Node;
@@ -85,19 +86,14 @@ public class ControllerWorker implements IControllerWorker {
 
     @Override
     public Optional<ButtonType> ShowAlert(Alert.AlertType type, String title, String header, String content) {
-        Alert alert = new Alert(type);
-
-        alert.setTitle(title);
-        alert.setHeaderText(header);
-        alert.setContentText(content);
-
+        Alert alert = AlertUtils.CreateAlert(type, title, header, content);
         return alert.showAndWait();
     }
 
     @Override
     public void OpenDownloadedFolderDialog(Path directory, String message) {
         Optional<ButtonType> result = ShowAlert(Alert.AlertType.CONFIRMATION,
-                "Done",
+                "Success!",
                 message,
                 "Do You want to open folder:\n" + directory + "?");
 
@@ -112,11 +108,11 @@ public class ControllerWorker implements IControllerWorker {
 
     @Override
     public void OpenDownloadedFolder(Path folderPath) {
-        FileExplorerHelper.OpenFolderAsync(folderPath)
+        FileExplorerUtils.OpenFolderAsync(folderPath)
                 .thenRun(() -> log.info("Folder opened successfully: {}", folderPath))
                 .exceptionally(throwable -> {
                     Platform.runLater(() ->
-                            ShowAlert(Alert.AlertType.ERROR, "Error", "Failed to Open Folder", throwable.getMessage()));
+                            ShowAlert(Alert.AlertType.ERROR, "Error!", "Failed to Open Folder", throwable.getMessage()));
                     return null;
                 });
     }

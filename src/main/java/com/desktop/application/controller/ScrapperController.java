@@ -19,6 +19,7 @@ import javax.swing.filechooser.FileSystemView;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -149,7 +150,9 @@ public class ScrapperController {
     }
 
     private void successSubmitAction(Path directory, String message) {
-        controllerWorker.SetLoading(false, disableNodes, progress_bar);
+        List<Node> disabledNodesTemp = getDisabledNodesOnSuccess();
+
+        controllerWorker.SetLoading(false, disabledNodesTemp, progress_bar);
         progress_bar.progressProperty().unbind();
 
         controllerWorker.OpenDownloadedFolderDialog(directory, message);
@@ -164,5 +167,17 @@ public class ScrapperController {
     private Void errorPlatformRun(Throwable throwable) {
         Platform.runLater(() -> errorSubmitAction(throwable.getMessage()));
         return null;
+    }
+
+    private List<Node> getDisabledNodesOnSuccess() {
+        List<Node> disabledNodesTemp = new ArrayList<>();
+        for (Node node : disableNodes) {
+            if (node.equals(scrap_styles_driver_cbx) && !process_driver_cbx.isSelected())
+                continue;
+
+            disabledNodesTemp.add(node);
+        }
+
+        return disabledNodesTemp;
     }
 }
