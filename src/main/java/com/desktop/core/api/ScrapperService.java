@@ -106,11 +106,10 @@ public class ScrapperService implements IScrapperService {
             int pageIndex,
             IStorageWorker storageWorker) {
 
-        return startProcesses(document, processingContext, storageWorker)
-                .thenCompose(unused -> {
-                    finalProcess(document, processingContext.getOptions());
-                    return saveDocument(document, processingContext.getSavePath(), pageIndex, storageWorker);
-                })
+        return CompletableFuture.runAsync(() -> preProcesses(document))
+                .thenCompose(unused -> startProcesses(document, processingContext, storageWorker))
+                .thenAccept(unused -> postProcesses(document, processingContext.getOptions()))
+                .thenCompose(unused -> saveDocument(document, processingContext.getSavePath(), pageIndex, storageWorker))
                 .thenApply(finalPath -> {
                     updateProgress(1.0); // Complete
                     return finalPath;
@@ -122,7 +121,6 @@ public class ScrapperService implements IScrapperService {
             Document document,
             ProcessingContext processingContext,
             IStorageWorker storageWorker) {
-
         Path savePath = processingContext.getSavePath();
         ConcurrentHashMap<String, FileSaveModel> filesToSaveList = processingContext.getFilesToSaveList();
         ConcurrentHashMap<String, String> usedFileNamesCssList = processingContext.getUsedFileNamesCssList();
@@ -176,8 +174,15 @@ public class ScrapperService implements IScrapperService {
         return storageWorker.GetFolderPath(fileHost);
     }
 
+    // First document modifications
+    private void preProcesses(Document document) {
+        DocumentWorker.ScrapFilteredTags(document).remove();
+        DocumentWorker.ScrapFilteredSrc(document).remove();
+        DocumentWorker.ScrapFilteredInlineScript(document).remove();
+    }
+
     // Final document modifications
-    private void finalProcess(Document document, ScrapperRequestDTO.ProcessingOptions options) {
+    private void postProcesses(Document document, ScrapperRequestDTO.ProcessingOptions options) {
         document.select("base").remove();
         if (options.shouldReplaceHref()) {
             DocumentWorker.ReplaceAnchorHref(document, "{offer}");

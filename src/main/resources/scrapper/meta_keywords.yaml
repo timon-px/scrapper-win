@@ -1,0 +1,34 @@
+keywords:
+  # --- META ---
+  - "meta[name=robots]"
+  - "meta[name=author]"
+  - "meta[name=generator]"
+  - "meta[name=application-name]"
+  - "meta[name=keywords]"
+  - "meta[name=description]"
+  - "meta[name=url]"
+  - "meta[http-equiv=refresh]"
+  - "meta[property=article:publisher]"
+
+  # --- OpenGraph / Twitter / Facebook / Microsoft ---
+  - "meta[property^=og:]"
+  - "meta[name^=twitter:]"
+  - "meta[property^=fb:]"
+  - "meta[name^=msapplication-]"
+
+  # --- LINK (non functional) ---
+  - "link[rel=canonical]"
+  - "link[rel=shortlink]"
+  - "link[rel=publisher]"
+  - "link[rel=author]"
+  - "link[rel=alternate]"
+  - "link[rel=manifest]"
+  - "link[rel=help]"
+  - "link[rel=license]"
+  - "link[rel=prefetch]"
+  - "link[rel=dns-prefetch]"
+  - "link[rel=preconnect]"
+  - "link[rel=amphtml]"
+
+  # --- Other ---
+  - "script[type=application/ld+json]"
