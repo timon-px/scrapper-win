@@ -115,7 +115,9 @@ public class ScrapperWorker {
     }
 
     private static Connection getJsoupConnection(String url) {
-        return Jsoup.connect(url);
+        return Jsoup.connect(url)
+                .userAgent(ScrapperWorkerConstants.DEFAULT_USER_AGENT)
+                .ignoreHttpErrors(true);
     }
 
     private static Connection.Response getJsoupResponse(String url) throws IOException {

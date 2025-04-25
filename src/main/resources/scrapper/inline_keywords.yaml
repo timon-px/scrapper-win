@@ -3,6 +3,7 @@ keywords:
   - "gtag('config'"
   - "gtag('event'"
   - "gtag('set'"
+  - "gtag('js'"
   - "www.google-analytics.com"
 
   # Facebook tracking
