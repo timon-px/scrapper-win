@@ -31,9 +31,9 @@ public class HtmlConstants {
     public static final Set<String> FILTER_SRC_KEYWORDS;
     public static final Set<String> FILTER_SCRIPT_KEYWORDS;
 
-    private static final String FILTER_TAGS_RESOURCE_PATH = "/scrapper/meta_keywords.yaml";
-    private static final String FILTER_SRC_RESOURCE_PATH = "/scrapper/src_keywords.yaml";
-    private static final String FILTER_INLINE_RESOURCE_PATH = "/scrapper/inline_keywords.yaml";
+    private static final String FILTER_TAGS_RESOURCE_PATH = "/filters/meta_keywords.yaml";
+    private static final String FILTER_SRC_RESOURCE_PATH = "/filters/src_keywords.yaml";
+    private static final String FILTER_INLINE_RESOURCE_PATH = "/filters/inline_keywords.yaml";
 
     private static String getUniqueizerMetaTags() {
         int id = 0, length = UniqueizerConstants.OG_PROPERTIES.size();
