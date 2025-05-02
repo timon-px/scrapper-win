@@ -1,0 +1,144 @@
+name: Build JavaFX app for all platforms
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ uniqueizer-only ]
+
+jobs:
+  build:
+    name: Build for ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    env:
+      APP_VENDOR: TimonPX
+      APP_DESCRIPTION: "Application for uniqueizing sites"
+      JAR_MAIN_CLASS: com.desktop.Launcher
+      JLINK_DEPS: java.base,java.compiler,java.desktop,java.instrument,java.logging,java.management,java.naming,java.net.http,java.rmi,java.scripting,java.sql,java.xml,jdk.jfr,jdk.unsupported,jdk.crypto.ec
+      JPACKAGE_PROPS_WIN: --type app-image --icon src/main/resources/assets/icons/favicon.ico
+      JPACKAGE_PROPS_LINUX: --type deb --icon src/main/resources/assets/icons/favicon-linux.png --linux-shortcut --linux-menu-group Utility;Network;Java; --resource-dir build-info/linux/
+      JPACKAGE_PROPS_MACOS: --type dmg --icon src/main/resources/assets/icons/favicon-mac.icns --mac-package-identifier com.timonpx.uniqueizer
+
+    strategy:
+      matrix:
+        include:
+          - name: win
+            os: windows-latest
+            architecture: x64
+
+          - name: linux-deb
+            os: ubuntu-latest
+            architecture: x64
+
+          - name: mac
+            os: macos-latest
+            architecture: x64
+
+          - name: mac-aarch64
+            os: macos-latest
+            architecture: aarch64
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Step to Set Up Java Using setup-java
+      - name: Set up Java 21 with setup-java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'zulu'
+          architecture: ${{ matrix.architecture }}
+          cache: maven  # Enable Maven cache
+
+      - name: Cache Maven packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: maven-${{ matrix.name }}-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            maven-${{ matrix.name }}-
+
+      - name: Build Uber-JAR with Maven
+        run: |
+          echo "Running mvn package for profile ${{ matrix.name }}"
+
+          JAR_NAME=$(mvn help:evaluate -Dexpression=project.build.finalName -q -DforceStdout).jar
+          JAR_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          JAR_APP_NAME=$(mvn help:evaluate -Dexpression=project.name -q -DforceStdout)
+          
+          echo "JAR_NAME=$JAR_NAME" >> $GITHUB_ENV
+          echo "JAR_VERSION=$JAR_VERSION" >> $GITHUB_ENV
+          echo "JAR_APP_NAME=$JAR_APP_NAME" >> $GITHUB_ENV
+
+          mvn -B clean package
+
+          mkdir -p dist
+          mv target/$JAR_NAME dist/
+          rm -rf target/*
+        shell: bash
+
+      - name: Run jlink
+        run: |
+          echo "Running jlink for profile ${{ matrix.name }}"
+          jlink --add-modules $JLINK_DEPS --output ${{ matrix.name }}-runtime --compress=zip-6 --no-header-files --no-man-pages --strip-debug
+        shell: bash
+
+      - name: Build installer for Windows
+        if: matrix.os == 'windows-latest'
+        run: |
+          echo "Building installer for profile ${{ matrix.name }}"
+
+          jpackage $JPACKAGE_PROPS_WIN --input dist --dest app-bundle --name "$JAR_APP_NAME" --main-jar "$JAR_NAME" --main-class "$JAR_MAIN_CLASS" --runtime-image ${{ matrix.name }}-runtime --vendor "$APP_VENDOR" --app-version "$JAR_VERSION" --description "$APP_DESCRIPTION"          
+          
+          # Install Inno Setup
+          choco install innosetup -y
+          
+          # Run Inno Setup
+          iscc inno.iss
+        shell: bash
+
+      - name: Build installer for MacOS
+        if: matrix.os == 'macos-latest'
+        run: |
+          echo "Building installer for profile ${{ matrix.name }}"
+          
+          jpackage \
+            $JPACKAGE_PROPS_MACOS \
+            --input dist \
+            --dest installer \
+            --name "$JAR_APP_NAME" \
+            --main-jar "$JAR_NAME" \
+            --main-class "$JAR_MAIN_CLASS" \
+            --runtime-image ${{ matrix.name }}-runtime \
+            --vendor "$APP_VENDOR" \
+            --app-version "$JAR_VERSION" \
+            --description "$APP_DESCRIPTION" \
+        shell: bash
+
+      - name: Build installer for Linux (Deb)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          echo "Building installer for profile ${{ matrix.name }}"
+          
+          jpackage \
+            $JPACKAGE_PROPS_LINUX \
+            --input dist \
+            --dest installer \
+            --name "$JAR_APP_NAME" \
+            --main-jar "$JAR_NAME" \
+            --main-class "$JAR_MAIN_CLASS" \
+            --runtime-image ${{ matrix.name }}-runtime \
+            --vendor "$APP_VENDOR" \
+            --app-version "$JAR_VERSION" \
+            --description "$APP_DESCRIPTION" \
+        shell: bash
+
+      - name: Upload package artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: uniqueizer-${{ matrix.name }}-installer
+          path: |
+            installer/*
+            Uniqueizer-Setup.exe
+          if-no-files-found: error

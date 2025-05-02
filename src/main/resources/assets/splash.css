@@ -1,0 +1,7 @@
+.root {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #23233CFF;
+    -fx-border-width: 1;
+    -fx-padding: 20;
+    -fx-alignment: center;
+}

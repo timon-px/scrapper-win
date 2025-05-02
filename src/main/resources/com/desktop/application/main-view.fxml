@@ -4,7 +4,9 @@
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.VBox?>
-<VBox fx:id="v_box" alignment="TOP_CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="540.0" prefWidth="720.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.desktop.application.controller.MainController">
+<VBox fx:id="v_box" alignment="TOP_CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
+      minWidth="-Infinity" prefHeight="540.0" prefWidth="720.0" xmlns="http://javafx.com/javafx/17.0.12"
+      xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.desktop.application.controller.MainController">
     <BorderPane VBox.vgrow="ALWAYS">
         <center>
             <TabPane fx:id="tab_pane" tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER">

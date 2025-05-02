@@ -23,7 +23,7 @@ public class UniqueizerValidation {
         Tika tika = new Tika();
         try {
             String mimeType = tika.detect(file);
-            if (!mimeType.equals("text/html")) return "File type is not HTML";
+            if (!mimeType.equals("text/html")) return "File type is not HTML: " + file.getName();
         } catch (IOException e) {
             return "Error detecting the file";
         }

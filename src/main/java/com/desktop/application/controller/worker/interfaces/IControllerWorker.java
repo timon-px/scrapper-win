@@ -16,9 +16,15 @@ public interface IControllerWorker {
 
     void InitDirectoryBrowseBtn(Button button, Consumer<File> callback);
 
-    void InitFileBrowseBtn(Button button, Consumer<File> callback);
+    void InitFileBrowseBtn(Button button, Consumer<List<File>> callback);
 
-    Optional<ButtonType> ShowAllert(Alert.AlertType type, String title, String header, String content);
+    String GetStringFromFiles(List<File> files);
+
+    List<File> GetFilesFromString(String filesString);
+
+    Optional<ButtonType> ShowAlert(Alert.AlertType type, String title, String header, String content);
+
+    void OpenDownloadedFolderDialog(Path directory, String message);
 
     void OpenDownloadedFolder(Path folderPath);
 }
