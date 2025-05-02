@@ -2,7 +2,7 @@
 Name=uniqueizer
 Comment=Application for web scraping and uniqueizing sites
 Exec=/opt/uniqueizer/bin/uniqueizer
-Icon=/opt/uniqueizer/lib/scrapper.png
+Icon=/opt/uniqueizer/lib/uniqueizer.png
 Terminal=false
 Type=Application
 Categories=Utility;Network;Java;
