@@ -78,7 +78,7 @@ public class ScrapperApplication extends Application {
     private void configurePrimaryStage(Stage stage, Scene scene) {
         applyFavicon(stage);
 
-        stage.setTitle("Scrapper");
+        stage.setTitle("Uniqueizer");
         stage.setScene(scene);
 
         stage.setMaxWidth(1280);
