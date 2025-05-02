@@ -1,6 +1,6 @@
-package com.desktop.services.processors.interfaces;
+package com.desktop.core.scrapper.processor.interfaces;
 
-import com.desktop.services.models.FileSaveModel;
+import com.desktop.core.common.model.FileSaveModel;
 import javafx.beans.property.DoubleProperty;
 
 import java.util.concurrent.CompletableFuture;
