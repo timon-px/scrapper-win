@@ -30,7 +30,7 @@ AllowNoIcons=yes
 ; Remove the following line to run in administrative install mode (install for all users).
 PrivilegesRequired=lowest
 OutputDir=installer
-OutputBaseFilename=Scrapper-Setup
+OutputBaseFilename=Uniqueizer-Setup
 SetupIconFile={#MyAppIcon}
 SolidCompression=yes
 WizardStyle=modern
@@ -42,9 +42,9 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "app-bundle\scrapper\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "app-bundle\scrapper\app\*"; DestDir: "{app}\app"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "app-bundle\scrapper\runtime\*"; DestDir: "{app}\runtime"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "app-bundle\uniqueizer\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "app-bundle\uniqueizer\app\*"; DestDir: "{app}\app"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "app-bundle\uniqueizer\runtime\*"; DestDir: "{app}\runtime"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 ; NOTE: Removes all files before updating
