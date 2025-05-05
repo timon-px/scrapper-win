@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=scrapper
+Comment=Application for web scraping and uniqueizing sites
+Exec=/opt/scrapper/bin/scrapper
+Icon=/opt/scrapper/lib/scrapper.png
+Terminal=false
+Type=Application
+Categories=Utility;Network;Java;
+StartupWMClass=com.desktop.application.ScrapperApplication

@@ -1,0 +1,18 @@
+{
+  "extensions": {
+    "alerts": {
+      "initialized": true
+    },
+    "chrome_url_overrides": {},
+    "commands": {
+      "windows:Ctrl+B": {
+        "command_name": "_execute_action",
+        "extension": "ffgnbkjodofciddpkfhamnbfmodopgno",
+        "global": false
+      }
+    },
+    "pinned_extensions": [
+      "ffgnbkjodofciddpkfhamnbfmodopgno"
+    ]
+  }
+}

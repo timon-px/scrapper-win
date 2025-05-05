@@ -1,7 +1,9 @@
 package com.desktop.application.controller.worker;
 
 import com.desktop.application.controller.worker.interfaces.IControllerWorker;
-import com.desktop.application.utils.FileExplorerHelper;
+import com.desktop.application.utils.AlertUtils;
+import com.desktop.application.utils.FileExplorerUtils;
+import com.desktop.core.common.constants.UniqueizerConstants;
 import javafx.application.Platform;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -51,7 +53,7 @@ public class ControllerWorker implements IControllerWorker {
     }
 
     @Override
-    public void InitFileBrowseBtn(Button button, Consumer<File> callback) {
+    public void InitFileBrowseBtn(Button button, Consumer<List<File>> callback) {
         button.setOnAction(actionEvent -> {
             Scene currentScene = button.getScene();
 
@@ -62,31 +64,55 @@ public class ControllerWorker implements IControllerWorker {
             fileChooser.setTitle("Choose HTML File");
             fileChooser.getExtensionFilters().add(extensionFilter);
 
-            File file = fileChooser.showOpenDialog(currentScene.getWindow());
-            if (file != null) {
-                callback.accept(file);
+            List<File> files = fileChooser.showOpenMultipleDialog(currentScene.getWindow());
+
+            if (files != null && !files.isEmpty()) {
+                callback.accept(files);
             }
         });
     }
 
     @Override
-    public Optional<ButtonType> ShowAllert(Alert.AlertType type, String title, String header, String content) {
-        Alert alert = new Alert(type);
+    public String GetStringFromFiles(List<File> files) {
+        List<String> selectedFiles = files.stream().map(File::getAbsolutePath).toList();
+        return String.join(UniqueizerConstants.FILE_LIST_SEPARATOR, selectedFiles);
+    }
 
-        alert.setTitle(title);
-        alert.setHeaderText(header);
-        alert.setContentText(content);
+    @Override
+    public List<File> GetFilesFromString(String filesString) {
+        List<String> selectedPaths = List.of(filesString.split(","));
+        return selectedPaths.stream().map(path -> new File(path.trim())).toList();
+    }
 
+    @Override
+    public Optional<ButtonType> ShowAlert(Alert.AlertType type, String title, String header, String content) {
+        Alert alert = AlertUtils.CreateAlert(type, title, header, content);
         return alert.showAndWait();
     }
 
     @Override
+    public void OpenDownloadedFolderDialog(Path directory, String message) {
+        Optional<ButtonType> result = ShowAlert(Alert.AlertType.CONFIRMATION,
+                "Success!",
+                message,
+                "Do You want to open folder:\n" + directory + "?");
+
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            try {
+                OpenDownloadedFolder(directory);
+            } catch (RuntimeException e) {
+                log.error(e.getMessage());
+            }
+        }
+    }
+
+    @Override
     public void OpenDownloadedFolder(Path folderPath) {
-        FileExplorerHelper.OpenFolderAsync(folderPath)
+        FileExplorerUtils.OpenFolderAsync(folderPath)
                 .thenRun(() -> log.info("Folder opened successfully: {}", folderPath))
                 .exceptionally(throwable -> {
                     Platform.runLater(() ->
-                            ShowAllert(Alert.AlertType.ERROR, "Error", "Failed to Open Folder", throwable.getMessage()));
+                            ShowAlert(Alert.AlertType.ERROR, "Error!", "Failed to Open Folder", throwable.getMessage()));
                     return null;
                 });
     }
