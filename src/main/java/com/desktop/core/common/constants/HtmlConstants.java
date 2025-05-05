@@ -1,7 +1,11 @@
 package com.desktop.core.common.constants;
 
+import com.desktop.core.utils.YamlKeywordLoader;
+
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 public class HtmlConstants {
     public static final List<String> SIMPLE_SAVE_ATTR = Arrays.asList("src", "href", "poster", "content", "data-lazy-src");
@@ -23,6 +27,14 @@ public class HtmlConstants {
     public static final String UNIQUEIZER_META_TAGS_QUERY;
     public static final String UNIQUEIZER_ALL_TAGS_QUERY;
 
+    public static final String FILTER_TAGS_QUERY;
+    public static final Set<String> FILTER_SRC_KEYWORDS;
+    public static final Set<String> FILTER_SCRIPT_KEYWORDS;
+
+    private static final String FILTER_TAGS_RESOURCE_PATH = "/filters/meta_keywords.yaml";
+    private static final String FILTER_SRC_RESOURCE_PATH = "/filters/src_keywords.yaml";
+    private static final String FILTER_INLINE_RESOURCE_PATH = "/filters/inline_keywords.yaml";
+
     private static String getUniqueizerMetaTags() {
         int id = 0, length = UniqueizerConstants.OG_PROPERTIES.size();
         StringBuilder builder = new StringBuilder();
@@ -35,8 +47,29 @@ public class HtmlConstants {
         return builder.toString();
     }
 
+    private static String getFilterSelector(String path, String placeholder) {
+        try {
+            Set<String> filterTagSelector = YamlKeywordLoader.LoadKeywordsFromResource(path);
+            return String.join(", ", filterTagSelector);
+        } catch (IOException e) {
+            return placeholder; // to not return completely empty
+        }
+    }
+
+    private static Set<String> getFilterKeywords(String path, String placeholder) {
+        try {
+            return YamlKeywordLoader.LoadKeywordsFromResource(path);
+        } catch (IOException e) {
+            return Set.of(placeholder); // to not return completely empty
+        }
+    }
+
     static {
         UNIQUEIZER_ALL_TAGS_QUERY = "*:not(" + String.join(", ", UniqueizerConstants.EXCLUDED_TAGS) + ")";
         UNIQUEIZER_META_TAGS_QUERY = getUniqueizerMetaTags();
+
+        FILTER_TAGS_QUERY = getFilterSelector(FILTER_TAGS_RESOURCE_PATH, "meta[name=url]");
+        FILTER_SRC_KEYWORDS = getFilterKeywords(FILTER_SRC_RESOURCE_PATH, "connect.facebook.net");
+        FILTER_SCRIPT_KEYWORDS = getFilterKeywords(FILTER_INLINE_RESOURCE_PATH, "www.google-analytics.com");
     }
 }

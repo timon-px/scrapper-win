@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class ScrapperWorkerConstants {
+    public static final String DEFAULT_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; WOW64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.5756.197 Safari/537.36";
     public static final Character[] INVALID_SPECIFIC_CHARS = {'"', '*', '<', '>', '?', '|', '#', ':'};
 
     public static final Set<SaveAsEnum> ALLOWED_TYPES = new HashSet<>(Arrays.asList(

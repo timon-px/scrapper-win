@@ -1,0 +1,46 @@
+keywords:
+  # Google Analytics
+  - "gtag('config'"
+  - "gtag('event'"
+  - "gtag('set'"
+  - "gtag('js'"
+  - "www.google-analytics.com"
+
+  # Facebook tracking
+  - "fbq('track'"
+  - "fbq('init'"
+  - "window.FB"
+
+  # Mixpanel
+  - "mixpanel.init("
+  - "mixpanel.track("
+  - "mixpanel.push("
+
+  # Hotjar
+  - "_hj.pushState"
+  - "_hj('trigger')"
+  - "_hj('identify')"
+
+  # Other tracking and analytics
+  - "_paq.push("
+  - "plausible("
+  - "gtm.push("
+  - "fbPixel.push("
+  - "_gaq.push("
+
+  # Known advertising or event systems
+  - "window.adroll"
+  - "window.addthis"
+  - "_satellite.push("
+  - "var _cio"
+  - "_paq.push("
+  - "window._prum"
+
+  # LinkedIn
+  - "analytics.linkedin.com"
+  - "_linkedin_data_partner_id"
+
+  # General event tracking
+  - "trackEvent("
+  - "trackPageView("
+  - "trackAnalytics("

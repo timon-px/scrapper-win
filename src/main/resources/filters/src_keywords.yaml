@@ -1,0 +1,42 @@
+keywords:
+  # Analytics and tracking services
+  - "www.google-analytics.com"
+  - "connect.facebook.net"
+  - "mc.yandex.ru"
+  - "bat.bing.com"
+  - "googletagmanager.com"
+  - "cdn.mxpnl.com"
+  - "snap.licdn.com"
+  - "www.mixpanel.com"
+  - "js.hs-scripts.com"
+  - "www.hotjar.com"
+  - "analytics.twitter.com"
+  - "platform.twitter.com"
+  - "www.pinterest.com"
+  - "www.optimizely.com"
+  - "www.adroll.com"
+  - "s.analytics.yahoo.com"
+  - "cdn.segment.com"
+  - "js.zarget.com"
+  - "securepubads.g.doubleclick.net"
+  - "connectid.analytics.yahoo.com"
+
+  # Known advertising services
+  - "ad.doubleclick.net"
+  - "www.addthis.com"
+  - "pagead2.googlesyndication.com"
+  - "bat.bing.com"
+  - "cdn.dynatrace.com"
+  - "www.impactradius.com"
+  - "px.ads.linkedin.com"
+  - "secure-ds.serving-sys.com"
+
+  # Known social media integrations
+  - "www.facebook.com"
+  - "static.chartbeat.com"
+  - "static.klaviyo.com"
+  - "js.intercomcdn.com"
+  - "static.hotjar.com"
+
+  # Common domain for hosted files used by different systems
+  - "ajax.googleapis.com"

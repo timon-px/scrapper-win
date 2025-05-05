@@ -63,6 +63,46 @@ public class DocumentWorker {
         return document.select(HtmlConstants.EXTERNAL_SCRIPTS_QUERY);
     }
 
+    public static Elements ScrapFilteredTags(Document document) {
+        // Вибираємо всі фільтровані теги
+        return document.select(HtmlConstants.FILTER_TAGS_QUERY);
+    }
+
+    public static Elements ScrapFilteredSrc(Document document) {
+        // Вибираємо всі фільтровані src keywords
+        Elements resultElements = new Elements();
+        Elements srcElements = document.select("script[src], iframe[src]");
+
+        for (Element src : srcElements) {
+            if (!src.hasAttr("src")) continue;
+
+            for (String keyword : HtmlConstants.FILTER_SRC_KEYWORDS) {
+                if (!src.attr("src").contains(keyword)) continue;
+                resultElements.add(src);
+                break;
+            }
+        }
+
+        return resultElements;
+    }
+
+    public static Elements ScrapFilteredInlineScript(Document document) {
+        // Вибираємо всі фільтровані <script> keywords
+        Elements resultElements = new Elements();
+        Elements scriptElements = document.select("script:not([src])");
+
+        for (Element script : scriptElements) {
+            String html = script.html().toLowerCase();
+            for (String keyword : HtmlConstants.FILTER_SCRIPT_KEYWORDS) {
+                if (!html.contains(keyword)) continue;
+                resultElements.add(script);
+                break;
+            }
+        }
+
+        return resultElements;
+    }
+
     public static Document AppendStyleBlock(Document document, String css) {
         Element styleNode = document.createElement("style");
         styleNode.append(css);

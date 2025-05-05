@@ -106,13 +106,12 @@ public class ScrapperService implements IScrapperService {
             int pageIndex,
             IStorageWorker storageWorker) {
 
-        return startProcesses(document, processingContext, storageWorker)
-                .thenCompose(unused -> {
-                    finalProcess(document, processingContext.getOptions());
-                    return saveDocument(document, processingContext.getSavePath(), pageIndex, storageWorker);
-                })
+        return CompletableFuture.runAsync(() -> preProcesses(document, processingContext))
+                .thenCompose(unused -> startProcesses(document, processingContext, storageWorker))
+                .thenAccept(unused -> postProcesses(document, processingContext))
+                .thenCompose(unused -> saveDocument(document, processingContext.getSavePath(), pageIndex, storageWorker))
                 .thenApply(finalPath -> {
-                    updateProgress(1.0); // Complete
+                    updateProgress(processingContext.progressProperty(), 1.0); // Complete
                     return finalPath;
                 });
     }
@@ -162,7 +161,7 @@ public class ScrapperService implements IScrapperService {
     private List<Document> fetchDocuments(ScrapperRequestDTO request) {
         try {
             List<Document> documents = ScrapperWorker.GetDocuments(request.getUrl(), request.getProcessingOptions());
-            updateProgress(0.05); // Initial fetch complete
+            updateProgress(progress, 0.05); // Initial fetch complete
 
             return documents;
         } catch (IOException e) {
@@ -176,8 +175,19 @@ public class ScrapperService implements IScrapperService {
         return storageWorker.GetFolderPath(fileHost);
     }
 
+    // First document modifications
+    private void preProcesses(Document document, ProcessingContext processingContext) {
+        DocumentWorker.ScrapFilteredTags(document).remove();
+        DocumentWorker.ScrapFilteredSrc(document).remove();
+        DocumentWorker.ScrapFilteredInlineScript(document).remove();
+
+        updateProgress(processingContext.progressProperty(), 0.1);
+    }
+
     // Final document modifications
-    private void finalProcess(Document document, ScrapperRequestDTO.ProcessingOptions options) {
+    private void postProcesses(Document document, ProcessingContext processingContext) {
+        ScrapperRequestDTO.ProcessingOptions options = processingContext.getOptions();
+
         document.select("base").remove();
         if (options.shouldReplaceHref()) {
             DocumentWorker.ReplaceAnchorHref(document, "{offer}");
@@ -215,7 +225,7 @@ public class ScrapperService implements IScrapperService {
     }
 
     // Update progress helper
-    private void updateProgress(double value) {
+    private void updateProgress(DoubleProperty progress, double value) {
         DocumentWorker.UpdateProgress(progress, value);
     }
 
