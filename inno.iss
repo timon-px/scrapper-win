@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Scrapper"
-#define MyAppVersion "1.4.2"
+#define MyAppVersion "1.4.3"
 #define MyAppPublisher "TimonPX"
 #define MyAppExeName "scrapper.exe"
 #define MyAppIcon "src\main\resources\assets\icons\favicon.ico"
